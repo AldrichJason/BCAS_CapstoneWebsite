@@ -1,0 +1,14 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost,1433;Database=BcasCapstone;User Id=sa;Password=Your_password123;TrustServerCertificate=True;"
+  },
+  "Jwt": {
+    "Key": "replace-with-a-long-random-development-only-secret",
+    "Issuer": "BCAS.Api",
+    "Audience": "BCAS.Client",
+    "ExpiryMinutes": 60
+  },
+  "Cors": {
+    "AllowedOrigins": [ "http://localhost:5173" ]
+  }
+}
