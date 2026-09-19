@@ -2,10 +2,16 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import * as authApi from '../api/authApi';
+import type { ErrorResponseDto } from '../types/auth';
+
+function isAxiosErrorResponse(error: unknown): error is { response?: { data?: ErrorResponseDto } } {
+  return typeof error === 'object' && error !== null && 'response' in error;
+}
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [devPreviewCode, setDevPreviewCode] = useState<string | null>(null);
@@ -18,16 +24,21 @@ export function ForgotPasswordPage() {
       return;
     }
     setFieldError(null);
+    setFormError(null);
 
     setIsSubmitting(true);
     try {
       const response = await authApi.forgotPassword(email);
       setDevPreviewCode(response.devPreviewCode ?? null);
+      // This success message intentionally shows regardless of whether the
+      // account exists, so the response can't be used to enumerate accounts.
+      // A real send/server failure (below) is a different case and IS shown.
+      setSubmitted(true);
+    } catch (error) {
+      const message = isAxiosErrorResponse(error) ? error.response?.data?.message : undefined;
+      setFormError(message ?? 'Something went wrong sending the reset code. Please try again.');
     } finally {
       setIsSubmitting(false);
-      // Always show the same confirmation, regardless of outcome, so the
-      // response can't be used to check which emails have accounts.
-      setSubmitted(true);
     }
   }
 
@@ -60,6 +71,7 @@ export function ForgotPasswordPage() {
           </>
         ) : (
           <>
+            {formError && <div className="form-error" role="alert">{formError}</div>}
             <label htmlFor="email">Email</label>
             <input
               id="email"
