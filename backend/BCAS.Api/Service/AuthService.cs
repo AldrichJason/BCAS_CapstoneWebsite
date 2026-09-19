@@ -16,30 +16,33 @@ public class AuthService : IAuthService
         _tokenGenerator = tokenGenerator;
     }
 
-    public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto request)
+    public async Task<(LoginResult Result, LoginResponseDto? Response)> LoginAsync(LoginRequestDto request)
     {
         var user = await _userRepository.GetByEmailOrUsernameAsync(request.EmailOrUsername);
 
-        // Generic failure for unknown email, inactive account or bad password:
-        // never reveal which condition failed (BW-10 AC).
-        if (user is null || !user.IsActive)
+        // Unknown account or wrong password: identical generic failure either
+        // way, so guessing usernames can't be used to enumerate accounts.
+        if (user is null || !PasswordHasher.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
         {
-            return null;
+            return (LoginResult.InvalidCredentials, null);
         }
 
-        if (!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
+        // Only reachable once the password is already proven correct, so this
+        // doesn't leak deactivation status to someone who doesn't know it.
+        if (!user.IsActive)
         {
-            return null;
+            return (LoginResult.AccountDeactivated, null);
         }
 
         var (token, _, expiresAtUtc) = _tokenGenerator.GenerateToken(user);
 
-        return new LoginResponseDto
+        var response = new LoginResponseDto
         {
             Token = token,
             ExpiresAtUtc = expiresAtUtc,
             User = MapToDto(user),
         };
+        return (LoginResult.Success, response);
     }
 
     public async Task<UserDto?> GetActiveUserAsync(int userId)

@@ -30,13 +30,14 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await _authService.LoginAsync(request);
-        if (result is null)
-        {
-            return Unauthorized(new ErrorResponseDto("Invalid credentials."));
-        }
+        var (result, response) = await _authService.LoginAsync(request);
 
-        return Ok(result);
+        return result switch
+        {
+            LoginResult.Success => Ok(response),
+            LoginResult.AccountDeactivated => Unauthorized(new ErrorResponseDto("This account has been deactivated. Contact your Super Admin.")),
+            _ => Unauthorized(new ErrorResponseDto("Invalid credentials.")),
+        };
     }
 
     // BW-12: Session check endpoint with role and department scope.
