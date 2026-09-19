@@ -16,3 +16,7 @@ export interface LoginResponseDto {
 export interface ErrorResponseDto {
   message: string;
 }
+
+export interface MessageResponseDto {
+  message: string;
+}

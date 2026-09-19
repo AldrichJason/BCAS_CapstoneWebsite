@@ -17,7 +17,12 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+builder.Services.AddScoped<IAdminAccountService, AdminAccountService>();
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
 builder.Services.AddSingleton<JwtTokenGenerator>();
 
 var jwtKey = builder.Configuration["Jwt:Key"];

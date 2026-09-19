@@ -118,14 +118,26 @@ The dev server runs at `http://localhost:5173` and expects the API at
 
 ## Current implementation status
 
-Implements the Sprint 1 authentication foundation:
+Implements the full Sprint 1 authentication & account-management slice:
 
 - **BW-8** – this scaffold (backend/frontend/database structure, linting, `.gitignore`).
 - **BW-9** – `database/schema.sql` and `database/seed.sql`.
 - **BW-10** – `POST /api/auth/login` (backend) + login page (frontend).
 - **BW-11** – `POST /api/auth/logout`, server-side token revocation.
 - **BW-12** – `GET /api/auth/session`, session restore on app load.
+- **BW-13** – `POST /api/auth/forgot-password` / `POST /api/auth/reset-password`, single-use
+  hashed reset tokens (30 min expiry), forgot/reset password pages.
+- **BW-14** – `POST /api/admin/accounts` (Super Admin only), role + department-scope validation,
+  duplicate-email rejection, invite email to set the initial password.
+- **BW-15** – `PATCH /api/admin/accounts/{id}/status` (Super Admin only) toggles an account
+  active/inactive; deactivated accounts are rejected on their next request via
+  `ActiveSessionMiddleware`; a Super Admin can't deactivate their own account.
 
-Not yet implemented (left for follow-up tickets): **BW-13** forgot/reset password (needs an
-email provider), **BW-14** admin account provisioning, **BW-15** account activation toggle, and
-role-specific dashboards beyond the placeholder in `DashboardPage.tsx`.
+### Email in local development
+
+`Smtp:Host` is empty by default, so `EmailSender` logs the reset/invite email (recipient,
+subject, body with the link) to the console instead of sending it — the full flow still works
+end-to-end without a real mail server. Set `Smtp:Host`/`Port`/`Username`/`Password` in
+`appsettings.Development.json` to send through a real SMTP provider.
+
+Still open: role-specific dashboards beyond the placeholder in `DashboardPage.tsx`.

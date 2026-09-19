@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { ErrorResponseDto } from '../types/auth';
 
@@ -103,6 +103,9 @@ export function LoginPage() {
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Signing in...' : 'Sign in'}
         </button>
+        <Link className="auth-link" to="/forgot-password">
+          Forgot password?
+        </Link>
       </form>
     </div>
   );
