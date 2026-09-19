@@ -64,15 +64,23 @@ export function ResetPasswordPage() {
     }
   }
 
+  const inputClass =
+    'mb-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-base focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50';
+  const labelClass = 'mb-1 text-sm font-semibold';
+  const fieldErrorClass = 'mb-3 text-xs text-red-700';
+
   if (succeeded) {
     return (
-      <div className="auth-page">
-        <div className="auth-form">
-          <h1>Password reset</h1>
-          <div className="form-success" role="status">
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex w-full max-w-sm flex-col rounded-xl border-t-4 border-accent bg-white p-10 shadow-lg">
+          <h1 className="mb-1 text-2xl font-bold text-primary">Password reset</h1>
+          <div className="mb-4 rounded-lg bg-primary-tint px-3 py-2.5 text-sm text-primary" role="status">
             Your password has been changed. You can now sign in.
           </div>
-          <Link className="auth-link" to="/login">
+          <Link
+            className="mt-4 text-center text-sm font-semibold text-primary hover:text-accent-dark hover:underline"
+            to="/login"
+          >
             Go to sign in
           </Link>
         </div>
@@ -81,23 +89,32 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className="auth-page">
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <h1>Enter your code</h1>
-        <p className="auth-subtitle">Check your email for a 6-digit code</p>
+    <div className="flex min-h-screen items-center justify-center">
+      <form
+        className="flex w-full max-w-sm flex-col rounded-xl border-t-4 border-accent bg-white p-10 shadow-lg"
+        onSubmit={handleSubmit}
+        noValidate
+      >
+        <h1 className="mb-1 text-2xl font-bold text-primary">Enter your code</h1>
+        <p className="mb-6 text-neutral-500">Check your email for a 6-digit code</p>
 
         {formError && (
           <>
-            <div className="form-error" role="alert">
+            <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
               {formError}
             </div>
-            <Link className="auth-link" to="/forgot-password">
+            <Link
+              className="mb-4 text-center text-sm font-semibold text-primary hover:text-accent-dark hover:underline"
+              to="/forgot-password"
+            >
               Request a new code
             </Link>
           </>
         )}
 
-        <label htmlFor="resetEmail">Email</label>
+        <label htmlFor="resetEmail" className={labelClass}>
+          Email
+        </label>
         <input
           id="resetEmail"
           type="email"
@@ -105,10 +122,13 @@ export function ResetPasswordPage() {
           onChange={(e) => setEmail(e.target.value)}
           disabled={isSubmitting}
           autoComplete="username"
+          className={inputClass}
         />
-        {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
+        {fieldErrors.email && <span className={fieldErrorClass}>{fieldErrors.email}</span>}
 
-        <label htmlFor="code">6-digit code</label>
+        <label htmlFor="code" className={labelClass}>
+          6-digit code
+        </label>
         <input
           id="code"
           inputMode="numeric"
@@ -116,10 +136,13 @@ export function ResetPasswordPage() {
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
           disabled={isSubmitting}
+          className={inputClass}
         />
-        {fieldErrors.code && <span className="field-error">{fieldErrors.code}</span>}
+        {fieldErrors.code && <span className={fieldErrorClass}>{fieldErrors.code}</span>}
 
-        <label htmlFor="newPassword">New password</label>
+        <label htmlFor="newPassword" className={labelClass}>
+          New password
+        </label>
         <input
           id="newPassword"
           type="password"
@@ -127,10 +150,13 @@ export function ResetPasswordPage() {
           onChange={(e) => setNewPassword(e.target.value)}
           disabled={isSubmitting}
           autoComplete="new-password"
+          className={inputClass}
         />
-        {fieldErrors.newPassword && <span className="field-error">{fieldErrors.newPassword}</span>}
+        {fieldErrors.newPassword && <span className={fieldErrorClass}>{fieldErrors.newPassword}</span>}
 
-        <label htmlFor="confirmPassword">Confirm new password</label>
+        <label htmlFor="confirmPassword" className={labelClass}>
+          Confirm new password
+        </label>
         <input
           id="confirmPassword"
           type="password"
@@ -138,12 +164,17 @@ export function ResetPasswordPage() {
           onChange={(e) => setConfirmPassword(e.target.value)}
           disabled={isSubmitting}
           autoComplete="new-password"
+          className={inputClass}
         />
         {fieldErrors.confirmPassword && (
-          <span className="field-error">{fieldErrors.confirmPassword}</span>
+          <span className={fieldErrorClass}>{fieldErrors.confirmPassword}</span>
         )}
 
-        <button type="submit" disabled={isSubmitting}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="mt-4 rounded-lg bg-primary py-2.5 font-semibold text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:bg-neutral-400"
+        >
           {isSubmitting ? 'Resetting...' : 'Reset password'}
         </button>
       </form>

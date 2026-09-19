@@ -43,36 +43,55 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="auth-page">
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <h1>Forgot password</h1>
-        <p className="auth-subtitle">We'll email you a code to reset it</p>
+    <div className="flex min-h-screen items-center justify-center">
+      <form
+        className="flex w-full max-w-sm flex-col rounded-xl border-t-4 border-accent bg-white p-10 shadow-lg"
+        onSubmit={handleSubmit}
+        noValidate
+      >
+        <h1 className="mb-1 text-2xl font-bold text-primary">Forgot password</h1>
+        <p className="mb-6 text-neutral-500">We'll email you a code to reset it</p>
 
         {submitted ? (
           <>
-            <div className="form-success" role="status">
+            <div className="mb-4 rounded-lg bg-primary-tint px-3 py-2.5 text-sm text-primary" role="status">
               If an account exists for that email, a 6-digit code has been sent. It expires in 30
               minutes.
             </div>
             {devPreviewCode && (
-              <div className="dev-preview">
+              <div className="mb-4 rounded-lg border-l-4 border-accent bg-accent-tint px-3 py-2.5 text-xs leading-relaxed text-amber-900">
                 <strong>Dev preview</strong> (no email server configured — this would normally
                 only arrive by email):
                 <br />
-                Your code is <span className="dev-preview-code">{devPreviewCode}</span>
+                Your code is{' '}
+                <span className="font-mono text-lg font-bold tracking-widest text-accent-dark">
+                  {devPreviewCode}
+                </span>
               </div>
             )}
-            <Link className="auth-link" to="/reset-password">
+            <Link
+              className="mt-4 text-center text-sm font-semibold text-primary hover:text-accent-dark hover:underline"
+              to="/reset-password"
+            >
               Enter code
             </Link>
-            <Link className="auth-link" to="/login">
+            <Link
+              className="mt-4 text-center text-sm font-semibold text-primary hover:text-accent-dark hover:underline"
+              to="/login"
+            >
               Back to sign in
             </Link>
           </>
         ) : (
           <>
-            {formError && <div className="form-error" role="alert">{formError}</div>}
-            <label htmlFor="email">Email</label>
+            {formError && (
+              <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+                {formError}
+              </div>
+            )}
+            <label htmlFor="email" className="mb-1 text-sm font-semibold">
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -80,13 +99,21 @@ export function ForgotPasswordPage() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isSubmitting}
               autoComplete="username"
+              className="mb-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-base focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50"
             />
-            {fieldError && <span className="field-error">{fieldError}</span>}
+            {fieldError && <span className="mb-3 text-xs text-red-700">{fieldError}</span>}
 
-            <button type="submit" disabled={isSubmitting}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="mt-4 rounded-lg bg-primary py-2.5 font-semibold text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:bg-neutral-400"
+            >
               {isSubmitting ? 'Sending...' : 'Send reset code'}
             </button>
-            <Link className="auth-link" to="/login">
+            <Link
+              className="mt-4 text-center text-sm font-semibold text-primary hover:text-accent-dark hover:underline"
+              to="/login"
+            >
               Back to sign in
             </Link>
           </>

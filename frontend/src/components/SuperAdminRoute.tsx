@@ -5,7 +5,11 @@ export function SuperAdminRoute() {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
-    return <div className="page-loading">Loading...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center text-neutral-500">
+        Loading...
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

@@ -69,14 +69,24 @@ export function LoginPage() {
   }
 
   return (
-    <div className="auth-page">
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <h1>BCAS Admin Portal</h1>
-        <p className="auth-subtitle">Sign in to continue</p>
+    <div className="flex min-h-screen items-center justify-center">
+      <form
+        className="flex w-full max-w-sm flex-col rounded-xl border-t-4 border-accent bg-white p-10 shadow-lg"
+        onSubmit={handleSubmit}
+        noValidate
+      >
+        <h1 className="mb-1 text-2xl font-bold text-primary">BCAS Admin Portal</h1>
+        <p className="mb-6 text-neutral-500">Sign in to continue</p>
 
-        {formError && <div className="form-error" role="alert">{formError}</div>}
+        {formError && (
+          <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+            {formError}
+          </div>
+        )}
 
-        <label htmlFor="emailOrUsername">Email or username</label>
+        <label htmlFor="emailOrUsername" className="mb-1 text-sm font-semibold">
+          Email or username
+        </label>
         <input
           id="emailOrUsername"
           type="text"
@@ -84,12 +94,15 @@ export function LoginPage() {
           onChange={(e) => setEmailOrUsername(e.target.value)}
           disabled={isSubmitting}
           autoComplete="username"
+          className="mb-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-base focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50"
         />
         {fieldErrors.emailOrUsername && (
-          <span className="field-error">{fieldErrors.emailOrUsername}</span>
+          <span className="mb-3 text-xs text-red-700">{fieldErrors.emailOrUsername}</span>
         )}
 
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password" className="mb-1 text-sm font-semibold">
+          Password
+        </label>
         <input
           id="password"
           type="password"
@@ -97,13 +110,23 @@ export function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           disabled={isSubmitting}
           autoComplete="current-password"
+          className="mb-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-base focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50"
         />
-        {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+        {fieldErrors.password && (
+          <span className="mb-3 text-xs text-red-700">{fieldErrors.password}</span>
+        )}
 
-        <button type="submit" disabled={isSubmitting}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="mt-4 rounded-lg bg-primary py-2.5 font-semibold text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:bg-neutral-400"
+        >
           {isSubmitting ? 'Signing in...' : 'Sign in'}
         </button>
-        <Link className="auth-link" to="/forgot-password">
+        <Link
+          className="mt-4 text-center text-sm font-semibold text-primary hover:text-accent-dark hover:underline"
+          to="/forgot-password"
+        >
           Forgot password?
         </Link>
       </form>

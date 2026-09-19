@@ -11,25 +11,35 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="dashboard-page">
-      <header className="dashboard-header">
+    <div className="mx-auto max-w-4xl px-6 py-8">
+      <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1>
+          <h1 className="text-2xl font-bold text-primary">
             Welcome, {user?.firstName} {user?.lastName}
           </h1>
-          <p>
+          <p className="text-neutral-600">
             Role: {user?.role}
             {user?.departmentName ? ` · ${user.departmentName}` : ''}
           </p>
         </div>
-        <button onClick={handleLogout}>Log out</button>
+        <button
+          onClick={handleLogout}
+          className="rounded-lg border border-primary bg-white px-4 py-2 font-semibold text-primary transition-colors hover:bg-primary-tint"
+        >
+          Log out
+        </button>
       </header>
       {user?.role === 'SuperAdmin' && (
         <p>
-          <Link to="/admin/accounts">Manage admin accounts</Link>
+          <Link
+            to="/admin/accounts"
+            className="font-semibold text-primary hover:text-accent-dark hover:underline"
+          >
+            Manage admin accounts
+          </Link>
         </p>
       )}
-      <p className="dashboard-placeholder">
+      <p className="text-neutral-500">
         Role-specific dashboard content will be built out in the following sprint tickets.
       </p>
     </div>

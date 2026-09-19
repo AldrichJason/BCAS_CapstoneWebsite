@@ -1,7 +1,7 @@
 # BCAS Capstone Website
 
-Admin portal for BCAS: ASP.NET Core Web API (C#) + Dapper backend, React + TypeScript
-frontend, SQL Server database.
+Admin portal for BCAS: ASP.NET Core Web API (C#) + Dapper backend, React + TypeScript +
+Tailwind CSS frontend, SQL Server database.
 
 ## Repository structure
 

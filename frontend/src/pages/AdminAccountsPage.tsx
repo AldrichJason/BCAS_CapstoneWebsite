@@ -123,57 +123,85 @@ export function AdminAccountsPage() {
     }
   }
 
-  return (
-    <div className="dashboard-page">
-      <h1>Admin accounts</h1>
+  const inputClass =
+    'rounded-lg border border-neutral-300 px-2.5 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30';
+  const labelClass = 'mb-1 text-xs font-semibold';
 
-      <form className="admin-form" onSubmit={handleCreate}>
-        <h2>Create account</h2>
-        {formError && <div className="form-error" role="alert">{formError}</div>}
-        {formSuccess && <div className="form-success" role="status">{formSuccess}</div>}
+  return (
+    <div className="mx-auto max-w-4xl px-6 py-8">
+      <h1 className="mb-6 text-2xl font-bold text-primary">Admin accounts</h1>
+
+      <form
+        className="mb-8 max-w-2xl rounded-xl border-t-4 border-accent bg-white p-6 shadow-md"
+        onSubmit={handleCreate}
+      >
+        <h2 className="mb-3 mt-0 text-lg font-semibold text-primary">Create account</h2>
+        {formError && (
+          <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+            {formError}
+          </div>
+        )}
+        {formSuccess && (
+          <div className="mb-4 rounded-lg bg-primary-tint px-3 py-2.5 text-sm text-primary" role="status">
+            {formSuccess}
+          </div>
+        )}
         {devPreviewCode && (
-          <div className="dev-preview">
+          <div className="mb-4 rounded-lg border-l-4 border-accent bg-accent-tint px-3 py-2.5 text-xs leading-relaxed text-amber-900">
             <strong>Dev preview</strong> (no email server configured): invite code is{' '}
-            <span className="dev-preview-code">{devPreviewCode}</span>
+            <span className="font-mono text-lg font-bold tracking-widest text-accent-dark">
+              {devPreviewCode}
+            </span>
           </div>
         )}
 
-        <div className="admin-form-row">
-          <div>
-            <label htmlFor="firstName">First name</label>
+        <div className="mb-3 flex gap-4">
+          <div className="flex flex-1 flex-col">
+            <label htmlFor="firstName" className={labelClass}>
+              First name
+            </label>
             <input
               id="firstName"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               disabled={isSubmitting}
               required
+              className={inputClass}
             />
           </div>
-          <div>
-            <label htmlFor="lastName">Last name</label>
+          <div className="flex flex-1 flex-col">
+            <label htmlFor="lastName" className={labelClass}>
+              Last name
+            </label>
             <input
               id="lastName"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               disabled={isSubmitting}
               required
+              className={inputClass}
             />
           </div>
         </div>
 
-        <div className="admin-form-row">
-          <div>
-            <label htmlFor="username">Username</label>
+        <div className="mb-3 flex gap-4">
+          <div className="flex flex-1 flex-col">
+            <label htmlFor="username" className={labelClass}>
+              Username
+            </label>
             <input
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               disabled={isSubmitting}
               required
+              className={inputClass}
             />
           </div>
-          <div>
-            <label htmlFor="newAccountEmail">Email</label>
+          <div className="flex flex-1 flex-col">
+            <label htmlFor="newAccountEmail" className={labelClass}>
+              Email
+            </label>
             <input
               id="newAccountEmail"
               type="email"
@@ -181,13 +209,16 @@ export function AdminAccountsPage() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={isSubmitting}
               required
+              className={inputClass}
             />
           </div>
         </div>
 
-        <div className="admin-form-row">
-          <div>
-            <label htmlFor="role">Role</label>
+        <div className="mb-3 flex gap-4">
+          <div className="flex flex-1 flex-col">
+            <label htmlFor="role" className={labelClass}>
+              Role
+            </label>
             <select
               id="role"
               value={role}
@@ -196,6 +227,7 @@ export function AdminAccountsPage() {
                 setDepartmentId('');
               }}
               disabled={isSubmitting}
+              className={inputClass}
             >
               {ROLE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -207,15 +239,18 @@ export function AdminAccountsPage() {
         </div>
 
         {role === 'AcademicHead' && (
-          <div className="admin-form-row">
-            <div>
-              <label htmlFor="departmentId">Department</label>
+          <div className="mb-3 flex gap-4">
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="departmentId" className={labelClass}>
+                Department
+              </label>
               <select
                 id="departmentId"
                 value={departmentId}
                 onChange={(e) => setDepartmentId(e.target.value ? Number(e.target.value) : '')}
                 disabled={isSubmitting}
                 required
+                className={inputClass}
               >
                 <option value="">Select a department</option>
                 {DEPARTMENTS.map((dept) => (
@@ -228,13 +263,15 @@ export function AdminAccountsPage() {
           </div>
         )}
 
-        <p className="admin-form-hint">
+        <p className="my-2 text-xs text-neutral-500">
           Optional: set the initial password yourself. Leave both blank to email the new user a
           code to set their own password instead.
         </p>
-        <div className="admin-form-row">
-          <div>
-            <label htmlFor="newAccountPassword">Password (optional)</label>
+        <div className="mb-3 flex gap-4">
+          <div className="flex flex-1 flex-col">
+            <label htmlFor="newAccountPassword" className={labelClass}>
+              Password (optional)
+            </label>
             <input
               id="newAccountPassword"
               type="password"
@@ -242,10 +279,13 @@ export function AdminAccountsPage() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={isSubmitting}
               autoComplete="new-password"
+              className={inputClass}
             />
           </div>
-          <div>
-            <label htmlFor="newAccountConfirmPassword">Confirm password</label>
+          <div className="flex flex-1 flex-col">
+            <label htmlFor="newAccountConfirmPassword" className={labelClass}>
+              Confirm password
+            </label>
             <input
               id="newAccountConfirmPassword"
               type="password"
@@ -253,45 +293,70 @@ export function AdminAccountsPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={isSubmitting}
               autoComplete="new-password"
+              className={inputClass}
             />
           </div>
         </div>
-        {passwordFieldError && <span className="field-error">{passwordFieldError}</span>}
+        {passwordFieldError && <span className="text-xs text-red-700">{passwordFieldError}</span>}
 
-        <button type="submit" disabled={isSubmitting}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="rounded-lg bg-primary px-5 py-2.5 font-semibold text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:bg-neutral-400"
+        >
           {isSubmitting ? 'Creating...' : 'Create account'}
         </button>
       </form>
 
-      <h2>All accounts</h2>
-      {listError && <div className="form-error" role="alert">{listError}</div>}
+      <h2 className="mb-3 text-lg font-semibold text-primary">All accounts</h2>
+      {listError && (
+        <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+          {listError}
+        </div>
+      )}
       {isLoading ? (
         <p>Loading...</p>
       ) : (
-        <table className="admin-table">
+        <table className="w-full border-collapse overflow-hidden rounded-xl bg-white shadow-md">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Department</th>
-              <th>Status</th>
-              <th></th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Name
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Username
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Email
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Role
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Department
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Status
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary"></th>
             </tr>
           </thead>
           <tbody>
             {accounts.map((account) => (
               <tr key={account.id}>
-                <td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
                   {account.firstName} {account.lastName}
                 </td>
-                <td>{account.username}</td>
-                <td>{account.email}</td>
-                <td>{account.role}</td>
-                <td>{account.departmentName ?? '—'}</td>
-                <td>{account.isActive ? 'Active' : 'Inactive'}</td>
-                <td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{account.username}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{account.email}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{account.role}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  {account.departmentName ?? '—'}
+                </td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  {account.isActive ? 'Active' : 'Inactive'}
+                </td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
                   <button
                     onClick={() => handleToggleActive(account)}
                     disabled={account.id === currentUser?.id && account.isActive}
@@ -300,6 +365,7 @@ export function AdminAccountsPage() {
                         ? 'You cannot deactivate your own account'
                         : undefined
                     }
+                    className="rounded-md border border-accent-dark px-3 py-1.5 font-semibold text-accent-dark transition-colors hover:bg-accent-tint disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400"
                   >
                     {account.isActive ? 'Deactivate' : 'Reactivate'}
                   </button>
