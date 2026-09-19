@@ -10,4 +10,7 @@ public class AdminAccountDto
     public string? DepartmentName { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>Local-dev-only convenience; see <see cref="MessageResponseDto.DevPreviewCode"/>.</summary>
+    public string? InviteCode { get; set; }
 }

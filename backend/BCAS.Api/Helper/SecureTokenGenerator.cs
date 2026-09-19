@@ -17,6 +17,10 @@ public static class SecureTokenGenerator
             .Replace('/', '_')
             .TrimEnd('=');
 
+    /// <summary>A 6-digit code (e.g. "042913") for email-a-code reset/invite flows.</summary>
+    public static string GenerateNumericCode() =>
+        RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+
     public static string HashToken(string token) =>
         Convert.ToBase64String(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)));
 }

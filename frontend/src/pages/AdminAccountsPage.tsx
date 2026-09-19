@@ -29,6 +29,7 @@ export function AdminAccountsPage() {
   const [departmentId, setDepartmentId] = useState<number | ''>('');
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [devPreviewCode, setDevPreviewCode] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function loadAccounts() {
@@ -51,16 +52,18 @@ export function AdminAccountsPage() {
     event.preventDefault();
     setFormError(null);
     setFormSuccess(null);
+    setDevPreviewCode(null);
     setIsSubmitting(true);
 
     try {
-      await adminApi.createAccount({
+      const created = await adminApi.createAccount({
         fullName,
         email,
         role,
         departmentId: role === 'AcademicHead' ? (departmentId === '' ? null : departmentId) : null,
       });
-      setFormSuccess(`${email} was created and sent an invite to set their password.`);
+      setFormSuccess(`${email} was created and sent an invite code to set their password.`);
+      setDevPreviewCode(created.inviteCode ?? null);
       setFullName('');
       setEmail('');
       setRole(ROLE_OPTIONS[1].value);
@@ -92,6 +95,12 @@ export function AdminAccountsPage() {
         <h2>Create account</h2>
         {formError && <div className="form-error" role="alert">{formError}</div>}
         {formSuccess && <div className="form-success" role="status">{formSuccess}</div>}
+        {devPreviewCode && (
+          <div className="dev-preview">
+            <strong>Dev preview</strong> (no email server configured): invite code is{' '}
+            <span className="dev-preview-code">{devPreviewCode}</span>
+          </div>
+        )}
 
         <div className="admin-form-row">
           <div>

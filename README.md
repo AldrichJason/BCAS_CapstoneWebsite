@@ -125,10 +125,12 @@ Implements the full Sprint 1 authentication & account-management slice:
 - **BW-10** – `POST /api/auth/login` (backend) + login page (frontend).
 - **BW-11** – `POST /api/auth/logout`, server-side token revocation.
 - **BW-12** – `GET /api/auth/session`, session restore on app load.
-- **BW-13** – `POST /api/auth/forgot-password` / `POST /api/auth/reset-password`, single-use
-  hashed reset tokens (30 min expiry), forgot/reset password pages.
+- **BW-13** – `POST /api/auth/forgot-password` / `POST /api/auth/reset-password`. Emails a
+  single-use 6-digit code (hashed, 30 min expiry); the reset page is an email + code + new
+  password + confirm form.
 - **BW-14** – `POST /api/admin/accounts` (Super Admin only), role + department-scope validation,
-  duplicate-email rejection, invite email to set the initial password.
+  duplicate-email rejection, invite email with a 6-digit code to set the initial password (same
+  reset-password page/flow as BW-13).
 - **BW-15** – `PATCH /api/admin/accounts/{id}/status` (Super Admin only) toggles an account
   active/inactive; deactivated accounts are rejected on their next request via
   `ActiveSessionMiddleware`; a Super Admin can't deactivate their own account.
@@ -136,8 +138,10 @@ Implements the full Sprint 1 authentication & account-management slice:
 ### Email in local development
 
 `Smtp:Host` is empty by default, so `EmailSender` logs the reset/invite email (recipient,
-subject, body with the link) to the console instead of sending it — the full flow still works
-end-to-end without a real mail server. Set `Smtp:Host`/`Port`/`Username`/`Password` in
-`appsettings.Development.json` to send through a real SMTP provider.
+subject, body with the code) to the console instead of sending it, and the API response also
+includes the code as `devPreviewCode`/`inviteCode` (only when `Development` + no SMTP configured
+— never in production) so the frontend can show it directly without checking the terminal. Set
+`Smtp:Host`/`Port`/`Username`/`Password` in `appsettings.Development.json` to send through a real
+SMTP provider (e.g. Gmail) instead.
 
 Still open: role-specific dashboards beyond the placeholder in `DashboardPage.tsx`.

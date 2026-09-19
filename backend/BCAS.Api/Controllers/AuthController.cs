@@ -87,12 +87,13 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        await _passwordResetService.RequestPasswordResetAsync(request.Email);
+        var devPreviewCode = await _passwordResetService.RequestPasswordResetAsync(request.Email);
 
-        return Ok(new MessageResponseDto("If an account exists for that email, a reset link has been sent."));
+        return Ok(new MessageResponseDto(
+            "If an account exists for that email, a reset code has been sent.", devPreviewCode));
     }
 
-    // BW-13: Reset password using the single-use token from the emailed link.
+    // BW-13: Reset password using the single-use 6-digit code from the emailed message.
     [HttpPost("reset-password")]
     [AllowAnonymous]
     public async Task<ActionResult<MessageResponseDto>> ResetPassword([FromBody] ResetPasswordRequestDto request)
@@ -102,10 +103,10 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await _passwordResetService.ResetPasswordAsync(request.Token, request.NewPassword);
+        var result = await _passwordResetService.ResetPasswordAsync(request.Email, request.Code, request.NewPassword);
         if (result == ResetPasswordResult.InvalidOrExpiredToken)
         {
-            return BadRequest(new ErrorResponseDto("This reset link is invalid or has expired. Please request a new one."));
+            return BadRequest(new ErrorResponseDto("That code is invalid or has expired. Please request a new one."));
         }
 
         return Ok(new MessageResponseDto("Your password has been reset. You can now sign in."));

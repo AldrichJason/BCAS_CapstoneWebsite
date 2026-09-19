@@ -66,10 +66,12 @@ public class AdminAccountService : IAdminAccountService
         var createdUser = await _userRepository.GetByIdAsync(newUserId)
             ?? throw new InvalidOperationException("User was created but could not be re-read.");
 
-        await _passwordResetService.IssueInviteAsync(createdUser);
+        var inviteCode = await _passwordResetService.IssueInviteAsync(createdUser);
         await _activityLog.LogAsync(createdByUserId, "AccountCreated", "User", newUserId, $"Created {request.Email} ({role.Name})");
 
-        return (CreateAccountResult.Success, MapToDto(createdUser));
+        var dto = MapToDto(createdUser);
+        dto.InviteCode = inviteCode;
+        return (CreateAccountResult.Success, dto);
     }
 
     public async Task<SetActiveResult> SetActiveAsync(int accountId, bool isActive, int actingUserId)

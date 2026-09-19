@@ -4,8 +4,12 @@ namespace BCAS.Api.Model.DTOs;
 
 public class ResetPasswordRequestDto
 {
+    [Required, EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
     [Required]
-    public string Token { get; set; } = string.Empty;
+    [RegularExpression(@"^\d{6}$", ErrorMessage = "Enter the 6-digit code from your email.")]
+    public string Code { get; set; } = string.Empty;
 
     [Required]
     [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d).{8,}$",

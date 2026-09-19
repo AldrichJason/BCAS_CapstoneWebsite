@@ -12,12 +12,14 @@ export async function forgotPassword(email: string): Promise<MessageResponseDto>
 }
 
 export async function resetPassword(
-  token: string,
+  email: string,
+  code: string,
   newPassword: string,
   confirmPassword: string,
 ): Promise<MessageResponseDto> {
   const response = await apiClient.post<MessageResponseDto>('/auth/reset-password', {
-    token,
+    email,
+    code,
     newPassword,
     confirmPassword,
   });

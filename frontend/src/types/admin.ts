@@ -7,6 +7,8 @@ export interface AdminAccountDto {
   departmentName: string | null;
   isActive: boolean;
   createdAt: string;
+  /** Local-dev-only convenience: present when no SMTP server is configured. */
+  inviteCode?: string | null;
 }
 
 export interface CreateAccountRequestDto {

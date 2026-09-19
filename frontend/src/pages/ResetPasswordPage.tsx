@@ -1,45 +1,39 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import * as authApi from '../api/authApi';
 import type { ErrorResponseDto } from '../types/auth';
 
 const PASSWORD_POLICY = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+const CODE_POLICY = /^\d{6}$/;
 
 function isAxiosErrorResponse(error: unknown): error is { response?: { data?: ErrorResponseDto } } {
   return typeof error === 'object' && error !== null && 'response' in error;
 }
 
 export function ResetPasswordPage() {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') ?? '';
-
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{ newPassword?: string; confirmPassword?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    code?: string;
+    newPassword?: string;
+    confirmPassword?: string;
+  }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
 
-  if (!token) {
-    return (
-      <div className="auth-page">
-        <div className="auth-form">
-          <h1>Reset password</h1>
-          <div className="form-error" role="alert">
-            This link is missing its reset token. Please use the link from your email, or request
-            a new one.
-          </div>
-          <Link className="auth-link" to="/forgot-password">
-            Request a new link
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   function validate(): boolean {
-    const errors: { newPassword?: string; confirmPassword?: string } = {};
+    const errors: typeof fieldErrors = {};
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Enter a valid email address.';
+    }
+    if (!CODE_POLICY.test(code)) {
+      errors.code = 'Enter the 6-digit code from your email.';
+    }
     if (!PASSWORD_POLICY.test(newPassword)) {
       errors.newPassword = 'Must be at least 8 characters and include a letter and a number.';
     }
@@ -60,11 +54,11 @@ export function ResetPasswordPage() {
 
     setIsSubmitting(true);
     try {
-      await authApi.resetPassword(token, newPassword, confirmPassword);
+      await authApi.resetPassword(email, code, newPassword, confirmPassword);
       setSucceeded(true);
     } catch (error) {
       const message = isAxiosErrorResponse(error) ? error.response?.data?.message : undefined;
-      setFormError(message ?? 'This reset link is invalid or has expired.');
+      setFormError(message ?? 'That code is invalid or has expired.');
     } finally {
       setIsSubmitting(false);
     }
@@ -89,8 +83,8 @@ export function ResetPasswordPage() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <h1>Reset password</h1>
-        <p className="auth-subtitle">Choose a new password</p>
+        <h1>Enter your code</h1>
+        <p className="auth-subtitle">Check your email for a 6-digit code</p>
 
         {formError && (
           <>
@@ -98,10 +92,32 @@ export function ResetPasswordPage() {
               {formError}
             </div>
             <Link className="auth-link" to="/forgot-password">
-              Request a new link
+              Request a new code
             </Link>
           </>
         )}
+
+        <label htmlFor="resetEmail">Email</label>
+        <input
+          id="resetEmail"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isSubmitting}
+          autoComplete="username"
+        />
+        {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
+
+        <label htmlFor="code">6-digit code</label>
+        <input
+          id="code"
+          inputMode="numeric"
+          maxLength={6}
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+          disabled={isSubmitting}
+        />
+        {fieldErrors.code && <span className="field-error">{fieldErrors.code}</span>}
 
         <label htmlFor="newPassword">New password</label>
         <input

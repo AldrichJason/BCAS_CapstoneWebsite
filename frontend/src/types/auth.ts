@@ -19,4 +19,6 @@ export interface ErrorResponseDto {
 
 export interface MessageResponseDto {
   message: string;
+  /** Local-dev-only convenience: present when no SMTP server is configured. */
+  devPreviewCode?: string | null;
 }
