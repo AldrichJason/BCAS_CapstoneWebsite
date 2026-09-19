@@ -4,7 +4,9 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { ErrorResponseDto } from '../types/auth';
 
-function isAxiosErrorResponse(error: unknown): error is { response?: { data?: ErrorResponseDto } } {
+function isAxiosErrorResponse(
+  error: unknown,
+): error is { response?: { status?: number; data?: ErrorResponseDto } } {
   return typeof error === 'object' && error !== null && 'response' in error;
 }
 
@@ -49,10 +51,20 @@ export function LoginPage() {
       await login(email, password);
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      const message = isAxiosErrorResponse(error)
-        ? error.response?.data?.message
-        : undefined;
-      setFormError(message ?? 'Invalid email or password.');
+      if (isAxiosErrorResponse(error)) {
+        if (error.response?.status === 401) {
+          setFormError(error.response.data?.message ?? 'Invalid email or password.');
+        } else if (error.response) {
+          setFormError(
+            error.response.data?.message ??
+              `Something went wrong (server returned ${error.response.status}). Please try again.`,
+          );
+        } else {
+          setFormError('Could not reach the server. Is the backend running?');
+        }
+      } else {
+        setFormError('Something went wrong. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
