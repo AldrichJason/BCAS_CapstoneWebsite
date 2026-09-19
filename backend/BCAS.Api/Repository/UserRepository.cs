@@ -17,7 +17,7 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         const string sql = @"
-            SELECT u.Id, u.FullName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
+            SELECT u.Id, u.FirstName, u.LastName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
                    u.RoleId, r.Name AS RoleName, u.DepartmentId, d.Name AS DepartmentName,
                    u.IsActive, u.CreatedAt, u.UpdatedAt
             FROM Users u
@@ -32,7 +32,7 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByEmailOrUsernameAsync(string identifier)
     {
         const string sql = @"
-            SELECT u.Id, u.FullName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
+            SELECT u.Id, u.FirstName, u.LastName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
                    u.RoleId, r.Name AS RoleName, u.DepartmentId, d.Name AS DepartmentName,
                    u.IsActive, u.CreatedAt, u.UpdatedAt
             FROM Users u
@@ -47,7 +47,7 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByIdAsync(int id)
     {
         const string sql = @"
-            SELECT u.Id, u.FullName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
+            SELECT u.Id, u.FirstName, u.LastName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
                    u.RoleId, r.Name AS RoleName, u.DepartmentId, d.Name AS DepartmentName,
                    u.IsActive, u.CreatedAt, u.UpdatedAt
             FROM Users u
@@ -116,9 +116,9 @@ public class UserRepository : IUserRepository
     public async Task<int> CreateUserAsync(NewUser newUser)
     {
         const string sql = @"
-            INSERT INTO Users (FullName, Username, Email, PasswordHash, PasswordSalt, RoleId, DepartmentId, IsActive)
+            INSERT INTO Users (FirstName, LastName, Username, Email, PasswordHash, PasswordSalt, RoleId, DepartmentId, IsActive)
             OUTPUT INSERTED.Id
-            VALUES (@FullName, @Username, @Email, @PasswordHash, @PasswordSalt, @RoleId, @DepartmentId, 1);";
+            VALUES (@FirstName, @LastName, @Username, @Email, @PasswordHash, @PasswordSalt, @RoleId, @DepartmentId, 1);";
 
         using var connection = _connectionFactory.CreateConnection();
         return await connection.ExecuteScalarAsync<int>(sql, newUser);
@@ -149,13 +149,13 @@ public class UserRepository : IUserRepository
     public async Task<IReadOnlyList<User>> ListAsync()
     {
         const string sql = @"
-            SELECT u.Id, u.FullName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
+            SELECT u.Id, u.FirstName, u.LastName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
                    u.RoleId, r.Name AS RoleName, u.DepartmentId, d.Name AS DepartmentName,
                    u.IsActive, u.CreatedAt, u.UpdatedAt
             FROM Users u
             INNER JOIN Roles r ON r.Id = u.RoleId
             LEFT JOIN Departments d ON d.Id = u.DepartmentId
-            ORDER BY u.FullName;";
+            ORDER BY u.FirstName, u.LastName;";
 
         using var connection = _connectionFactory.CreateConnection();
         var users = await connection.QueryAsync<User>(sql);

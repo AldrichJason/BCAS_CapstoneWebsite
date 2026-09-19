@@ -2,7 +2,7 @@ using BCAS.Api.Model;
 
 namespace BCAS.Api.Repository.Interfaces;
 
-public record NewUser(string FullName, string Username, string Email, string PasswordHash, string PasswordSalt, int RoleId, int? DepartmentId);
+public record NewUser(string FirstName, string LastName, string Username, string Email, string PasswordHash, string PasswordSalt, int RoleId, int? DepartmentId);
 
 public interface IUserRepository
 {

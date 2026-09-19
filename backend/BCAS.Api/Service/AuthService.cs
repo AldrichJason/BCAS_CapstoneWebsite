@@ -59,7 +59,8 @@ public class AuthService : IAuthService
     private static UserDto MapToDto(Model.User user) => new()
     {
         Id = user.Id,
-        FullName = user.FullName,
+        FirstName = user.FirstName,
+        LastName = user.LastName,
         Username = user.Username,
         Email = user.Email,
         Role = user.RoleName,

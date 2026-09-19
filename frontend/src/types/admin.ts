@@ -1,6 +1,7 @@
 export interface AdminAccountDto {
   id: number;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   username: string;
   email: string;
   role: string;
@@ -13,7 +14,8 @@ export interface AdminAccountDto {
 }
 
 export interface CreateAccountRequestDto {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   username: string;
   email: string;
   role: string;

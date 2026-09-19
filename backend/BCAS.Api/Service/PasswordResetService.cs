@@ -59,7 +59,7 @@ public class PasswordResetService : IPasswordResetService
             : "We received a request to reset your BCAS Admin Portal password. Use the code below to choose a new one:";
 
         var body = $"""
-            <p>Hi {user.FullName},</p>
+            <p>Hi {user.FirstName},</p>
             <p>{intro}</p>
             <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px;">{code}</p>
             <p>Enter this code, along with your email, at <a href="{resetPageUrl}">{resetPageUrl}</a>.</p>

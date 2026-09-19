@@ -42,9 +42,10 @@ GO
 -- Hash generated with the same PBKDF2-HMACSHA256 (100,000 iterations, 32-byte
 -- key, 16-byte salt) as Helper/PasswordHasher.cs.
 ------------------------------------------------------------
-INSERT INTO dbo.Users (FullName, Username, Email, PasswordHash, PasswordSalt, RoleId, DepartmentId, IsActive)
+INSERT INTO dbo.Users (FirstName, LastName, Username, Email, PasswordHash, PasswordSalt, RoleId, DepartmentId, IsActive)
 SELECT
-    'Super Admin',
+    'Super',
+    'Admin',
     'superadmin',
     'superadmin@bcas.edu.ph',
     'RBUj1Tn/ZIKAxn4UunwOO61xFKu82+i9t+P2SIpDnNg=',

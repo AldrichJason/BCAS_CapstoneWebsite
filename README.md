@@ -93,18 +93,21 @@ departments), the four roles, and an initial Super Admin:
 
 ### Updating an existing database
 
-If your database was created before `Users.Username` existed (i.e. you ran `schema.sql` before
-this was added), don't re-run `schema.sql` — it drops and recreates every table, which would
-wipe your data. Instead run the one-off migration once:
+If your database predates one of the changes below, don't re-run `schema.sql` — it drops and
+recreates every table, which would wipe your data. Instead run whichever one-off migrations you
+haven't applied yet, in order, against your existing database:
 
 ```bash
 sqlcmd -S <server> -d BcasCapstone -i database/migrations/001_add_username_to_users.sql
+sqlcmd -S <server> -d BcasCapstone -i database/migrations/002_split_fullname_to_first_last.sql
 ```
 
-It backfills a username for every existing account from the local part of their email (e.g.
-`jane.doe@bcas.edu.ph` → `jane.doe`) before adding the `NOT NULL`/`UNIQUE` constraints, so no
-data is lost. A fresh `schema.sql` run (new database) already includes the column — you don't
-need this migration in that case.
+- **001** adds `Users.Username` (backfilled from each account's email).
+- **002** replaces `Users.FullName` with separate `FirstName`/`LastName` columns (backfilled by
+  splitting the existing full name on its first space).
+
+A fresh `schema.sql` run (new database) already includes both — you only need these migrations
+if you set the database up before they existed.
 
 ## Frontend setup
 

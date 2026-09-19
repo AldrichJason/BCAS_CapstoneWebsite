@@ -14,7 +14,9 @@ export function DashboardPage() {
     <div className="dashboard-page">
       <header className="dashboard-header">
         <div>
-          <h1>Welcome, {user?.fullName}</h1>
+          <h1>
+            Welcome, {user?.firstName} {user?.lastName}
+          </h1>
           <p>
             Role: {user?.role}
             {user?.departmentName ? ` · ${user.departmentName}` : ''}

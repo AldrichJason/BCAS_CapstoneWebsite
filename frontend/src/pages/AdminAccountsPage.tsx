@@ -25,7 +25,8 @@ export function AdminAccountsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<string>(ROLE_OPTIONS[1].value);
@@ -55,7 +56,8 @@ export function AdminAccountsPage() {
   }, []);
 
   function resetForm() {
-    setFullName('');
+    setFirstName('');
+    setLastName('');
     setUsername('');
     setEmail('');
     setRole(ROLE_OPTIONS[1].value);
@@ -86,7 +88,8 @@ export function AdminAccountsPage() {
     setIsSubmitting(true);
     try {
       const created = await adminApi.createAccount({
-        fullName,
+        firstName,
+        lastName,
         username,
         email,
         role,
@@ -137,15 +140,28 @@ export function AdminAccountsPage() {
 
         <div className="admin-form-row">
           <div>
-            <label htmlFor="fullName">Full name</label>
+            <label htmlFor="firstName">First name</label>
             <input
-              id="fullName"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               disabled={isSubmitting}
               required
             />
           </div>
+          <div>
+            <label htmlFor="lastName">Last name</label>
+            <input
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              disabled={isSubmitting}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="admin-form-row">
           <div>
             <label htmlFor="username">Username</label>
             <input
@@ -156,9 +172,6 @@ export function AdminAccountsPage() {
               required
             />
           </div>
-        </div>
-
-        <div className="admin-form-row">
           <div>
             <label htmlFor="newAccountEmail">Email</label>
             <input
@@ -170,6 +183,9 @@ export function AdminAccountsPage() {
               required
             />
           </div>
+        </div>
+
+        <div className="admin-form-row">
           <div>
             <label htmlFor="role">Role</label>
             <select
@@ -267,7 +283,9 @@ export function AdminAccountsPage() {
           <tbody>
             {accounts.map((account) => (
               <tr key={account.id}>
-                <td>{account.fullName}</td>
+                <td>
+                  {account.firstName} {account.lastName}
+                </td>
                 <td>{account.username}</td>
                 <td>{account.email}</td>
                 <td>{account.role}</td>

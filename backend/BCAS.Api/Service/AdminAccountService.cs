@@ -85,7 +85,7 @@ public class AdminAccountService : IAdminAccountService
             : PasswordHasher.HashPassword(SecureTokenGenerator.GenerateToken());
 
         var newUserId = await _userRepository.CreateUserAsync(
-            new NewUser(request.FullName, request.Username, request.Email, hash, salt, role.Id, request.DepartmentId));
+            new NewUser(request.FirstName, request.LastName, request.Username, request.Email, hash, salt, role.Id, request.DepartmentId));
 
         var createdUser = await _userRepository.GetByIdAsync(newUserId)
             ?? throw new InvalidOperationException("User was created but could not be re-read.");
@@ -124,7 +124,8 @@ public class AdminAccountService : IAdminAccountService
     private static AdminAccountDto MapToDto(User user) => new()
     {
         Id = user.Id,
-        FullName = user.FullName,
+        FirstName = user.FirstName,
+        LastName = user.LastName,
         Username = user.Username,
         Email = user.Email,
         Role = user.RoleName,
