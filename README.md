@@ -86,8 +86,25 @@ sqlcmd -S <server> -d BcasCapstone -i database/seed.sql
 Seed data creates the four departments (rename them in `seed.sql` to match the school's actual
 departments), the four roles, and an initial Super Admin:
 
+- Username: `superadmin`
 - Email: `superadmin@bcas.edu.ph`
 - Password: `ChangeMe123!` — change this immediately after first login.
+- Login accepts either the username or the email.
+
+### Updating an existing database
+
+If your database was created before `Users.Username` existed (i.e. you ran `schema.sql` before
+this was added), don't re-run `schema.sql` — it drops and recreates every table, which would
+wipe your data. Instead run the one-off migration once:
+
+```bash
+sqlcmd -S <server> -d BcasCapstone -i database/migrations/001_add_username_to_users.sql
+```
+
+It backfills a username for every existing account from the local part of their email (e.g.
+`jane.doe@bcas.edu.ph` → `jane.doe`) before adding the `NOT NULL`/`UNIQUE` constraints, so no
+data is lost. A fresh `schema.sql` run (new database) already includes the column — you don't
+need this migration in that case.
 
 ## Frontend setup
 
@@ -129,8 +146,9 @@ Implements the full Sprint 1 authentication & account-management slice:
   single-use 6-digit code (hashed, 30 min expiry); the reset page is an email + code + new
   password + confirm form.
 - **BW-14** – `POST /api/admin/accounts` (Super Admin only), role + department-scope validation,
-  duplicate-email rejection, invite email with a 6-digit code to set the initial password (same
-  reset-password page/flow as BW-13).
+  duplicate-email/-username rejection. The Super Admin can either set the initial password
+  directly on the form, or leave it blank to email an invite code (same reset-password page/flow
+  as BW-13). Every account has both a `Username` and an `Email`; login accepts either.
 - **BW-15** – `PATCH /api/admin/accounts/{id}/status` (Super Admin only) toggles an account
   active/inactive; deactivated accounts are rejected on their next request via
   `ActiveSessionMiddleware`; a Super Admin can't deactivate their own account.

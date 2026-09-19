@@ -171,6 +171,12 @@ body {
   font-size: 1.1rem;
 }
 
+.admin-form-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0.5rem 0;
+}
+
 .admin-form-row {
   display: flex;
   gap: 1rem;

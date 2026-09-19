@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using BCAS.Api.Helper;
 using BCAS.Api.Model;
 using BCAS.Api.Model.DTOs;
@@ -8,6 +9,8 @@ namespace BCAS.Api.Service;
 
 public class AdminAccountService : IAdminAccountService
 {
+    private static readonly Regex PasswordPolicy = new(@"^(?=.*[A-Za-z])(?=.*\d).{8,}$", RegexOptions.Compiled);
+
     private readonly IUserRepository _userRepository;
     private readonly IPasswordResetService _passwordResetService;
     private readonly IActivityLogRepository _activityLog;
@@ -56,21 +59,46 @@ public class AdminAccountService : IAdminAccountService
             return (CreateAccountResult.DuplicateEmail, null);
         }
 
-        // New accounts start with a random, never-disclosed password; the
-        // invite email is the only way to set a real one (BW-14 AC).
-        var (hash, salt) = PasswordHasher.HashPassword(SecureTokenGenerator.GenerateToken());
+        if (await _userRepository.UsernameExistsAsync(request.Username))
+        {
+            return (CreateAccountResult.DuplicateUsername, null);
+        }
+
+        // The Super Admin may set the password directly; otherwise the account
+        // starts with a random, never-disclosed password and the invite code
+        // is the only way to set a real one (BW-14 AC).
+        var directPasswordProvided = !string.IsNullOrEmpty(request.Password);
+        if (directPasswordProvided)
+        {
+            if (!PasswordPolicy.IsMatch(request.Password!))
+            {
+                return (CreateAccountResult.PasswordPolicyViolation, null);
+            }
+            if (request.Password != request.ConfirmPassword)
+            {
+                return (CreateAccountResult.PasswordMismatch, null);
+            }
+        }
+
+        var (hash, salt) = directPasswordProvided
+            ? PasswordHasher.HashPassword(request.Password!)
+            : PasswordHasher.HashPassword(SecureTokenGenerator.GenerateToken());
 
         var newUserId = await _userRepository.CreateUserAsync(
-            new NewUser(request.FullName, request.Email, hash, salt, role.Id, request.DepartmentId));
+            new NewUser(request.FullName, request.Username, request.Email, hash, salt, role.Id, request.DepartmentId));
 
         var createdUser = await _userRepository.GetByIdAsync(newUserId)
             ?? throw new InvalidOperationException("User was created but could not be re-read.");
 
-        var inviteCode = await _passwordResetService.IssueInviteAsync(createdUser);
+        var dto = MapToDto(createdUser);
+
+        if (!directPasswordProvided)
+        {
+            dto.InviteCode = await _passwordResetService.IssueInviteAsync(createdUser);
+        }
+
         await _activityLog.LogAsync(createdByUserId, "AccountCreated", "User", newUserId, $"Created {request.Email} ({role.Name})");
 
-        var dto = MapToDto(createdUser);
-        dto.InviteCode = inviteCode;
         return (CreateAccountResult.Success, dto);
     }
 
@@ -97,6 +125,7 @@ public class AdminAccountService : IAdminAccountService
     {
         Id = user.Id,
         FullName = user.FullName,
+        Username = user.Username,
         Email = user.Email,
         Role = user.RoleName,
         DepartmentId = user.DepartmentId,

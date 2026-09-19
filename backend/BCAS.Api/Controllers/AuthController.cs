@@ -33,7 +33,7 @@ public class AuthController : ControllerBase
         var result = await _authService.LoginAsync(request);
         if (result is null)
         {
-            return Unauthorized(new ErrorResponseDto("Invalid email or password."));
+            return Unauthorized(new ErrorResponseDto("Invalid credentials."));
         }
 
         return Ok(result);

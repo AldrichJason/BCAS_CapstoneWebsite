@@ -6,10 +6,13 @@ public enum CreateAccountResult
 {
     Success,
     DuplicateEmail,
+    DuplicateUsername,
     InvalidRole,
     DepartmentRequired,
     DepartmentNotApplicable,
     DepartmentNotFound,
+    PasswordPolicyViolation,
+    PasswordMismatch,
 }
 
 public enum SetActiveResult

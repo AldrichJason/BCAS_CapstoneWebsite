@@ -6,6 +6,8 @@ import { ROLE_OPTIONS } from '../types/admin';
 import type { AdminAccountDto } from '../types/admin';
 import type { ErrorResponseDto } from '../types/auth';
 
+const PASSWORD_POLICY = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
 function isAxiosErrorResponse(error: unknown): error is { response?: { data?: ErrorResponseDto } } {
   return typeof error === 'object' && error !== null && 'response' in error;
 }
@@ -24,9 +26,13 @@ export function AdminAccountsPage() {
   const [listError, setListError] = useState<string | null>(null);
 
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<string>(ROLE_OPTIONS[1].value);
   const [departmentId, setDepartmentId] = useState<number | ''>('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordFieldError, setPasswordFieldError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [devPreviewCode, setDevPreviewCode] = useState<string | null>(null);
@@ -48,26 +54,53 @@ export function AdminAccountsPage() {
     loadAccounts();
   }, []);
 
+  function resetForm() {
+    setFullName('');
+    setUsername('');
+    setEmail('');
+    setRole(ROLE_OPTIONS[1].value);
+    setDepartmentId('');
+    setPassword('');
+    setConfirmPassword('');
+  }
+
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
     setFormSuccess(null);
     setDevPreviewCode(null);
-    setIsSubmitting(true);
+    setPasswordFieldError(null);
 
+    // Password is optional: leave both blank to email an invite code instead.
+    if (password || confirmPassword) {
+      if (!PASSWORD_POLICY.test(password)) {
+        setPasswordFieldError('Must be at least 8 characters and include a letter and a number.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setPasswordFieldError('Passwords do not match.');
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
     try {
       const created = await adminApi.createAccount({
         fullName,
+        username,
         email,
         role,
         departmentId: role === 'AcademicHead' ? (departmentId === '' ? null : departmentId) : null,
+        password: password || undefined,
+        confirmPassword: confirmPassword || undefined,
       });
-      setFormSuccess(`${email} was created and sent an invite code to set their password.`);
+      setFormSuccess(
+        password
+          ? `${email} was created with the password you set.`
+          : `${email} was created and sent an invite code to set their password.`,
+      );
       setDevPreviewCode(created.inviteCode ?? null);
-      setFullName('');
-      setEmail('');
-      setRole(ROLE_OPTIONS[1].value);
-      setDepartmentId('');
+      resetForm();
       await loadAccounts();
     } catch (error) {
       const message = isAxiosErrorResponse(error) ? error.response?.data?.message : undefined;
@@ -114,6 +147,19 @@ export function AdminAccountsPage() {
             />
           </div>
           <div>
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={isSubmitting}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="admin-form-row">
+          <div>
             <label htmlFor="newAccountEmail">Email</label>
             <input
               id="newAccountEmail"
@@ -124,9 +170,6 @@ export function AdminAccountsPage() {
               required
             />
           </div>
-        </div>
-
-        <div className="admin-form-row">
           <div>
             <label htmlFor="role">Role</label>
             <select
@@ -145,7 +188,10 @@ export function AdminAccountsPage() {
               ))}
             </select>
           </div>
-          {role === 'AcademicHead' && (
+        </div>
+
+        {role === 'AcademicHead' && (
+          <div className="admin-form-row">
             <div>
               <label htmlFor="departmentId">Department</label>
               <select
@@ -163,8 +209,38 @@ export function AdminAccountsPage() {
                 ))}
               </select>
             </div>
-          )}
+          </div>
+        )}
+
+        <p className="admin-form-hint">
+          Optional: set the initial password yourself. Leave both blank to email the new user a
+          code to set their own password instead.
+        </p>
+        <div className="admin-form-row">
+          <div>
+            <label htmlFor="newAccountPassword">Password (optional)</label>
+            <input
+              id="newAccountPassword"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isSubmitting}
+              autoComplete="new-password"
+            />
+          </div>
+          <div>
+            <label htmlFor="newAccountConfirmPassword">Confirm password</label>
+            <input
+              id="newAccountConfirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isSubmitting}
+              autoComplete="new-password"
+            />
+          </div>
         </div>
+        {passwordFieldError && <span className="field-error">{passwordFieldError}</span>}
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Creating...' : 'Create account'}
@@ -180,6 +256,7 @@ export function AdminAccountsPage() {
           <thead>
             <tr>
               <th>Name</th>
+              <th>Username</th>
               <th>Email</th>
               <th>Role</th>
               <th>Department</th>
@@ -191,6 +268,7 @@ export function AdminAccountsPage() {
             {accounts.map((account) => (
               <tr key={account.id}>
                 <td>{account.fullName}</td>
+                <td>{account.username}</td>
                 <td>{account.email}</td>
                 <td>{account.role}</td>
                 <td>{account.departmentName ?? '—'}</td>

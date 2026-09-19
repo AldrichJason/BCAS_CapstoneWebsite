@@ -40,10 +40,13 @@ public class AdminAccountsController : ControllerBase
         {
             CreateAccountResult.Success => CreatedAtAction(nameof(List), null, account),
             CreateAccountResult.DuplicateEmail => Conflict(new ErrorResponseDto("An account with that email already exists.")),
+            CreateAccountResult.DuplicateUsername => Conflict(new ErrorResponseDto("An account with that username already exists.")),
             CreateAccountResult.InvalidRole => BadRequest(new ErrorResponseDto("Unknown role. Must be one of: SuperAdmin, AcademicHead, AdminOfficeRegistrar, VpOfOperations.")),
             CreateAccountResult.DepartmentRequired => BadRequest(new ErrorResponseDto("Department is required for the Academic Head role.")),
             CreateAccountResult.DepartmentNotApplicable => BadRequest(new ErrorResponseDto("Department does not apply to this role.")),
             CreateAccountResult.DepartmentNotFound => BadRequest(new ErrorResponseDto("Selected department does not exist.")),
+            CreateAccountResult.PasswordPolicyViolation => BadRequest(new ErrorResponseDto("Password must be at least 8 characters and include a letter and a number.")),
+            CreateAccountResult.PasswordMismatch => BadRequest(new ErrorResponseDto("Passwords do not match.")),
             _ => BadRequest(new ErrorResponseDto("Could not create the account.")),
         };
     }

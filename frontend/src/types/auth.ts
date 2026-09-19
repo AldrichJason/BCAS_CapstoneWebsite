@@ -1,6 +1,7 @@
 export interface UserDto {
   id: number;
   fullName: string;
+  username: string;
   email: string;
   role: string;
   departmentId: number | null;

@@ -1,8 +1,8 @@
 import { apiClient } from './client';
 import type { LoginResponseDto, MessageResponseDto, UserDto } from '../types/auth';
 
-export async function login(email: string, password: string): Promise<LoginResponseDto> {
-  const response = await apiClient.post<LoginResponseDto>('/auth/login', { email, password });
+export async function login(emailOrUsername: string, password: string): Promise<LoginResponseDto> {
+  const response = await apiClient.post<LoginResponseDto>('/auth/login', { emailOrUsername, password });
   return response.data;
 }
 

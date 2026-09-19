@@ -14,9 +14,9 @@ export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ emailOrUsername?: string; password?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,11 +25,9 @@ export function LoginPage() {
   }
 
   function validate(): boolean {
-    const errors: { email?: string; password?: string } = {};
-    if (!email.trim()) {
-      errors.email = 'Email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Enter a valid email address.';
+    const errors: { emailOrUsername?: string; password?: string } = {};
+    if (!emailOrUsername.trim()) {
+      errors.emailOrUsername = 'Email or username is required.';
     }
     if (!password) {
       errors.password = 'Password is required.';
@@ -48,12 +46,12 @@ export function LoginPage() {
 
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      await login(emailOrUsername, password);
       navigate('/dashboard', { replace: true });
     } catch (error) {
       if (isAxiosErrorResponse(error)) {
         if (error.response?.status === 401) {
-          setFormError(error.response.data?.message ?? 'Invalid email or password.');
+          setFormError(error.response.data?.message ?? 'Invalid credentials.');
         } else if (error.response) {
           setFormError(
             error.response.data?.message ??
@@ -78,16 +76,18 @@ export function LoginPage() {
 
         {formError && <div className="form-error" role="alert">{formError}</div>}
 
-        <label htmlFor="email">Email</label>
+        <label htmlFor="emailOrUsername">Email or username</label>
         <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="emailOrUsername"
+          type="text"
+          value={emailOrUsername}
+          onChange={(e) => setEmailOrUsername(e.target.value)}
           disabled={isSubmitting}
           autoComplete="username"
         />
-        {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
+        {fieldErrors.emailOrUsername && (
+          <span className="field-error">{fieldErrors.emailOrUsername}</span>
+        )}
 
         <label htmlFor="password">Password</label>
         <input

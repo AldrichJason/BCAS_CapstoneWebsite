@@ -1,6 +1,7 @@
 export interface AdminAccountDto {
   id: number;
   fullName: string;
+  username: string;
   email: string;
   role: string;
   departmentId: number | null;
@@ -13,9 +14,13 @@ export interface AdminAccountDto {
 
 export interface CreateAccountRequestDto {
   fullName: string;
+  username: string;
   email: string;
   role: string;
   departmentId: number | null;
+  /** Optional: leave both blank to email an invite code instead. */
+  password?: string;
+  confirmPassword?: string;
 }
 
 export const ROLE_OPTIONS = [

@@ -18,7 +18,7 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto request)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email);
+        var user = await _userRepository.GetByEmailOrUsernameAsync(request.EmailOrUsername);
 
         // Generic failure for unknown email, inactive account or bad password:
         // never reveal which condition failed (BW-10 AC).
@@ -60,6 +60,7 @@ public class AuthService : IAuthService
     {
         Id = user.Id,
         FullName = user.FullName,
+        Username = user.Username,
         Email = user.Email,
         Role = user.RoleName,
         DepartmentId = user.DepartmentId,

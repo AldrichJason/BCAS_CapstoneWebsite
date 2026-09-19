@@ -50,6 +50,7 @@ CREATE TABLE dbo.Users
 (
     Id              INT IDENTITY(1,1) PRIMARY KEY,
     FullName        NVARCHAR(200) NOT NULL,
+    Username        NVARCHAR(100) NOT NULL UNIQUE,
     Email           NVARCHAR(256) NOT NULL UNIQUE,
     PasswordHash    NVARCHAR(256) NOT NULL,
     PasswordSalt    NVARCHAR(256) NOT NULL,

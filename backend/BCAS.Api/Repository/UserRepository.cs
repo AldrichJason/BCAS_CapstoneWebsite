@@ -17,7 +17,7 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         const string sql = @"
-            SELECT u.Id, u.FullName, u.Email, u.PasswordHash, u.PasswordSalt,
+            SELECT u.Id, u.FullName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
                    u.RoleId, r.Name AS RoleName, u.DepartmentId, d.Name AS DepartmentName,
                    u.IsActive, u.CreatedAt, u.UpdatedAt
             FROM Users u
@@ -29,10 +29,25 @@ public class UserRepository : IUserRepository
         return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Email = email });
     }
 
+    public async Task<User?> GetByEmailOrUsernameAsync(string identifier)
+    {
+        const string sql = @"
+            SELECT u.Id, u.FullName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
+                   u.RoleId, r.Name AS RoleName, u.DepartmentId, d.Name AS DepartmentName,
+                   u.IsActive, u.CreatedAt, u.UpdatedAt
+            FROM Users u
+            INNER JOIN Roles r ON r.Id = u.RoleId
+            LEFT JOIN Departments d ON d.Id = u.DepartmentId
+            WHERE u.Email = @Identifier OR u.Username = @Identifier;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Identifier = identifier });
+    }
+
     public async Task<User?> GetByIdAsync(int id)
     {
         const string sql = @"
-            SELECT u.Id, u.FullName, u.Email, u.PasswordHash, u.PasswordSalt,
+            SELECT u.Id, u.FullName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
                    u.RoleId, r.Name AS RoleName, u.DepartmentId, d.Name AS DepartmentName,
                    u.IsActive, u.CreatedAt, u.UpdatedAt
             FROM Users u
@@ -72,6 +87,15 @@ public class UserRepository : IUserRepository
         return count > 0;
     }
 
+    public async Task<bool> UsernameExistsAsync(string username)
+    {
+        const string sql = "SELECT COUNT(1) FROM Users WHERE Username = @Username;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        var count = await connection.ExecuteScalarAsync<int>(sql, new { Username = username });
+        return count > 0;
+    }
+
     public async Task<Role?> GetRoleByNameAsync(string name)
     {
         const string sql = "SELECT Id, Name FROM Roles WHERE Name = @Name;";
@@ -92,9 +116,9 @@ public class UserRepository : IUserRepository
     public async Task<int> CreateUserAsync(NewUser newUser)
     {
         const string sql = @"
-            INSERT INTO Users (FullName, Email, PasswordHash, PasswordSalt, RoleId, DepartmentId, IsActive)
+            INSERT INTO Users (FullName, Username, Email, PasswordHash, PasswordSalt, RoleId, DepartmentId, IsActive)
             OUTPUT INSERTED.Id
-            VALUES (@FullName, @Email, @PasswordHash, @PasswordSalt, @RoleId, @DepartmentId, 1);";
+            VALUES (@FullName, @Username, @Email, @PasswordHash, @PasswordSalt, @RoleId, @DepartmentId, 1);";
 
         using var connection = _connectionFactory.CreateConnection();
         return await connection.ExecuteScalarAsync<int>(sql, newUser);
@@ -125,7 +149,7 @@ public class UserRepository : IUserRepository
     public async Task<IReadOnlyList<User>> ListAsync()
     {
         const string sql = @"
-            SELECT u.Id, u.FullName, u.Email, u.PasswordHash, u.PasswordSalt,
+            SELECT u.Id, u.FullName, u.Username, u.Email, u.PasswordHash, u.PasswordSalt,
                    u.RoleId, r.Name AS RoleName, u.DepartmentId, d.Name AS DepartmentName,
                    u.IsActive, u.CreatedAt, u.UpdatedAt
             FROM Users u
