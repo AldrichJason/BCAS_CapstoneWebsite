@@ -161,8 +161,14 @@ CREATE TABLE dbo.Events
     CONSTRAINT FK_Events_Departments FOREIGN KEY (DepartmentId) REFERENCES dbo.Departments(Id),
     CONSTRAINT FK_Events_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES dbo.Users(Id),
     CONSTRAINT FK_Events_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES dbo.Users(Id),
-    CONSTRAINT CK_Events_Status CHECK (Status IN ('Draft','Scheduled','Published','Archived'))
+    CONSTRAINT CK_Events_Status CHECK (Status IN ('Draft','Scheduled','Published','Archived')),
+    -- BW-19 AC: end date/time must not precede the start date/time.
+    CONSTRAINT CK_Events_EndNotBeforeStart CHECK (EventEndUtc IS NULL OR EventEndUtc >= EventStartUtc)
 );
+GO
+
+-- Supports department-scoped list views filtered by status (BW-19).
+CREATE INDEX IX_Events_DepartmentId_Status ON dbo.Events(DepartmentId, Status);
 GO
 
 CREATE TABLE dbo.AcademicPrograms

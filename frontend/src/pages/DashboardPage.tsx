@@ -28,6 +28,7 @@ export function DashboardPage() {
         <nav className="dashboard-nav">
           <Link to="/news">Department News</Link>
           <Link to="/announcements">Announcements</Link>
+          <Link to="/events">Events</Link>
         </nav>
       )}
 
