@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { ErrorResponseDto } from '../types/auth';
 
-function isAxiosErrorResponse(error: unknown): error is { response?: { data?: ErrorResponseDto } } {
+function isAxiosErrorResponse(
+  error: unknown,
+): error is { response?: { status?: number; data?: ErrorResponseDto } } {
   return typeof error === 'object' && error !== null && 'response' in error;
 }
 
@@ -12,9 +14,9 @@ export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ emailOrUsername?: string; password?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -23,11 +25,9 @@ export function LoginPage() {
   }
 
   function validate(): boolean {
-    const errors: { email?: string; password?: string } = {};
-    if (!email.trim()) {
-      errors.email = 'Email is required.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Enter a valid email address.';
+    const errors: { emailOrUsername?: string; password?: string } = {};
+    if (!emailOrUsername.trim()) {
+      errors.emailOrUsername = 'Email or username is required.';
     }
     if (!password) {
       errors.password = 'Password is required.';
@@ -46,38 +46,63 @@ export function LoginPage() {
 
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      await login(emailOrUsername, password);
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      const message = isAxiosErrorResponse(error)
-        ? error.response?.data?.message
-        : undefined;
-      setFormError(message ?? 'Invalid email or password.');
+      if (isAxiosErrorResponse(error)) {
+        if (error.response?.status === 401) {
+          setFormError(error.response.data?.message ?? 'Invalid credentials.');
+        } else if (error.response) {
+          setFormError(
+            error.response.data?.message ??
+              `Something went wrong (server returned ${error.response.status}). Please try again.`,
+          );
+        } else {
+          setFormError('Could not reach the server. Is the backend running?');
+        }
+      } else {
+        setFormError('Something went wrong. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <div className="auth-page">
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <h1>BCAS Admin Portal</h1>
-        <p className="auth-subtitle">Sign in to continue</p>
+    <div className="flex min-h-screen items-center justify-center">
+      <form
+        className="flex w-full max-w-sm flex-col rounded-xl border-t-4 border-accent bg-white p-10 shadow-lg"
+        onSubmit={handleSubmit}
+        noValidate
+      >
+        <h1 className="mb-1 text-2xl font-bold text-primary">BCAS Admin Portal</h1>
+        <p className="mb-6 text-neutral-500">Sign in to continue</p>
 
-        {formError && <div className="form-error" role="alert">{formError}</div>}
+        {formError && (
+          <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+            {formError}
+          </div>
+        )}
 
-        <label htmlFor="email">Email</label>
+        <label htmlFor="emailOrUsername" className="mb-1 text-sm font-semibold">
+          Email or username
+        </label>
         <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="emailOrUsername"
+          type="text"
+          value={emailOrUsername}
+          onChange={(e) => setEmailOrUsername(e.target.value)}
           disabled={isSubmitting}
           autoComplete="username"
+          className="mb-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-base focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50"
         />
-        {fieldErrors.email && <span className="field-error">{fieldErrors.email}</span>}
+        {fieldErrors.emailOrUsername && (
+          <span className="mb-3 text-xs text-red-700">{fieldErrors.emailOrUsername}</span>
+        )}
 
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password" className="mb-1 text-sm font-semibold">
+          Password
+        </label>
         <input
           id="password"
           type="password"
@@ -85,12 +110,25 @@ export function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           disabled={isSubmitting}
           autoComplete="current-password"
+          className="mb-1 rounded-lg border border-neutral-300 px-3 py-2.5 text-base focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50"
         />
-        {fieldErrors.password && <span className="field-error">{fieldErrors.password}</span>}
+        {fieldErrors.password && (
+          <span className="mb-3 text-xs text-red-700">{fieldErrors.password}</span>
+        )}
 
-        <button type="submit" disabled={isSubmitting}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="mt-4 rounded-lg bg-primary py-2.5 font-semibold text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:bg-neutral-400"
+        >
           {isSubmitting ? 'Signing in...' : 'Sign in'}
         </button>
+        <Link
+          className="mt-4 text-center text-sm font-semibold text-primary hover:text-accent-dark hover:underline"
+          to="/forgot-password"
+        >
+          Forgot password?
+        </Link>
       </form>
     </div>
   );

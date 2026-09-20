@@ -5,6 +5,7 @@ import { CONTENT_STATUSES } from '../../types/news';
 import type { ContentStatusValue } from '../../types/news';
 import type { AnnouncementDto, AnnouncementRequest } from '../../types/announcement';
 import type { ErrorResponseDto } from '../../types/auth';
+import { StatusBadge } from '../../components/StatusBadge';
 
 function isAxiosErrorResponse(error: unknown): error is { response?: { data?: ErrorResponseDto } } {
   return typeof error === 'object' && error !== null && 'response' in error;
@@ -28,6 +29,14 @@ const emptyForm: AnnouncementRequest = {
   effectiveDateUtc: '',
   status: 'Draft',
 };
+
+const inputClass =
+  'rounded-lg border border-neutral-300 px-2.5 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50';
+const labelClass = 'mb-1 text-xs font-semibold';
+const primaryButtonClass =
+  'rounded-lg bg-primary px-5 py-2.5 font-semibold text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:bg-neutral-400';
+const secondaryButtonClass =
+  'rounded-lg border border-neutral-300 px-5 py-2.5 font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-400';
 
 export function AnnouncementsPage() {
   const [items, setItems] = useState<AnnouncementDto[]>([]);
@@ -129,91 +138,138 @@ export function AnnouncementsPage() {
   }
 
   return (
-    <div className="content-page">
-      <div className="content-page-header">
-        <h2>Department Announcements</h2>
-        <button onClick={openCreateForm}>+ New Announcement</button>
+    <div className="mx-auto max-w-4xl px-6 py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-primary">Department Announcements</h1>
+        <button onClick={openCreateForm} className={primaryButtonClass}>
+          + New Announcement
+        </button>
       </div>
 
-      <div className="content-filters">
-        <label htmlFor="announcement-status-filter">Status</label>
-        <select
-          id="announcement-status-filter"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as ContentStatusValue | '')}
-        >
-          <option value="">All</option>
-          {CONTENT_STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-
-        <label htmlFor="announcement-sort">Sort by date</label>
-        <select
-          id="announcement-sort"
-          value={sortOrder}
-          onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-        >
-          <option value="desc">Newest first</option>
-          <option value="asc">Oldest first</option>
-        </select>
-      </div>
-
-      {listError && <div className="form-error" role="alert">{listError}</div>}
-
-      {isFormOpen && (
-        <form className="content-form" onSubmit={handleSubmit}>
-          <h3>{editingId === null ? 'New Announcement' : 'Edit Announcement'}</h3>
-
-          {formError && <div className="form-error" role="alert">{formError}</div>}
-
-          <label htmlFor="announcement-title">Title</label>
-          <input
-            id="announcement-title"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            disabled={isSubmitting}
-          />
-
-          <label htmlFor="announcement-body">Body</label>
-          <textarea
-            id="announcement-body"
-            rows={6}
-            value={form.body}
-            onChange={(e) => setForm({ ...form, body: e.target.value })}
-            disabled={isSubmitting}
-          />
-
-          <label htmlFor="announcement-effective-date">Effective date</label>
-          <input
-            id="announcement-effective-date"
-            type="datetime-local"
-            value={form.effectiveDateUtc}
-            onChange={(e) => setForm({ ...form, effectiveDateUtc: e.target.value })}
-            disabled={isSubmitting}
-          />
-
-          <label htmlFor="announcement-status">Status</label>
+      <div className="mb-4 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label htmlFor="announcement-status-filter" className="text-sm font-semibold text-neutral-700">
+            Status
+          </label>
           <select
-            id="announcement-status"
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatusValue })}
-            disabled={isSubmitting}
+            id="announcement-status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as ContentStatusValue | '')}
+            className={inputClass}
           >
+            <option value="">All</option>
             {CONTENT_STATUSES.map((status) => (
               <option key={status} value={status}>
                 {status}
               </option>
             ))}
           </select>
+        </div>
 
-          <div className="content-form-actions">
-            <button type="submit" disabled={isSubmitting}>
+        <div className="flex items-center gap-2">
+          <label htmlFor="announcement-sort" className="text-sm font-semibold text-neutral-700">
+            Sort by date
+          </label>
+          <select
+            id="announcement-sort"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+            className={inputClass}
+          >
+            <option value="desc">Newest first</option>
+            <option value="asc">Oldest first</option>
+          </select>
+        </div>
+      </div>
+
+      {listError && (
+        <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+          {listError}
+        </div>
+      )}
+
+      {isFormOpen && (
+        <form
+          className="mb-8 flex flex-col rounded-xl border-t-4 border-accent bg-white p-6 shadow-md"
+          onSubmit={handleSubmit}
+        >
+          <h2 className="mb-3 mt-0 text-lg font-semibold text-primary">
+            {editingId === null ? 'New Announcement' : 'Edit Announcement'}
+          </h2>
+
+          {formError && (
+            <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+              {formError}
+            </div>
+          )}
+
+          <div className="mb-3 flex flex-col">
+            <label htmlFor="announcement-title" className={labelClass}>
+              Title
+            </label>
+            <input
+              id="announcement-title"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              disabled={isSubmitting}
+              className={inputClass}
+            />
+          </div>
+
+          <div className="mb-3 flex flex-col">
+            <label htmlFor="announcement-body" className={labelClass}>
+              Body
+            </label>
+            <textarea
+              id="announcement-body"
+              rows={6}
+              value={form.body}
+              onChange={(e) => setForm({ ...form, body: e.target.value })}
+              disabled={isSubmitting}
+              className={inputClass}
+            />
+          </div>
+
+          <div className="mb-3 flex gap-4">
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="announcement-effective-date" className={labelClass}>
+                Effective date
+              </label>
+              <input
+                id="announcement-effective-date"
+                type="datetime-local"
+                value={form.effectiveDateUtc}
+                onChange={(e) => setForm({ ...form, effectiveDateUtc: e.target.value })}
+                disabled={isSubmitting}
+                className={inputClass}
+              />
+            </div>
+
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="announcement-status" className={labelClass}>
+                Status
+              </label>
+              <select
+                id="announcement-status"
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatusValue })}
+                disabled={isSubmitting}
+                className={inputClass}
+              >
+                {CONTENT_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-2 flex gap-3">
+            <button type="submit" disabled={isSubmitting} className={primaryButtonClass}>
               {isSubmitting ? 'Saving...' : 'Save'}
             </button>
-            <button type="button" onClick={closeForm} disabled={isSubmitting} className="secondary">
+            <button type="button" onClick={closeForm} disabled={isSubmitting} className={secondaryButtonClass}>
               Cancel
             </button>
           </div>
@@ -223,32 +279,52 @@ export function AnnouncementsPage() {
       {isLoading ? (
         <p>Loading...</p>
       ) : items.length === 0 ? (
-        <p className="dashboard-placeholder">No announcements yet.</p>
+        <p className="text-neutral-500">No announcements yet.</p>
       ) : (
-        <table className="content-table">
+        <table className="w-full border-collapse overflow-hidden rounded-xl bg-white shadow-md">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Effective date</th>
-              <th>Author</th>
-              <th />
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Title
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Status
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Effective date
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Author
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5"></th>
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.id}>
-                <td>{item.title}</td>
-                <td>
-                  <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{item.title}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  <StatusBadge status={item.status} />
                 </td>
-                <td>{item.effectiveDateUtc ? new Date(item.effectiveDateUtc).toLocaleString() : ''}</td>
-                <td>{item.createdByName}</td>
-                <td className="content-table-actions">
-                  <button onClick={() => openEditForm(item)}>Edit</button>
-                  <button onClick={() => handleDelete(item)} className="danger">
-                    Delete
-                  </button>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  {item.effectiveDateUtc ? new Date(item.effectiveDateUtc).toLocaleString() : ''}
+                </td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{item.createdByName}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditForm(item)}
+                      className="rounded-md border border-neutral-300 px-3 py-1.5 font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item)}
+                      className="rounded-md border border-red-300 px-3 py-1.5 font-semibold text-red-700 transition-colors hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

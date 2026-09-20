@@ -11,8 +11,8 @@ public class NewsRepository : INewsRepository
 
     private const string SelectColumns = @"
         n.Id, n.Title, n.Body, n.DepartmentId, d.Name AS DepartmentName, n.Status, n.PublishAtUtc,
-        n.CreatedBy, creator.FullName AS CreatedByName, n.CreatedAt,
-        n.UpdatedBy, updater.FullName AS UpdatedByName, n.UpdatedAt
+        n.CreatedBy, (creator.FirstName + ' ' + creator.LastName) AS CreatedByName, n.CreatedAt,
+        n.UpdatedBy, (updater.FirstName + ' ' + updater.LastName) AS UpdatedByName, n.UpdatedAt
         FROM News n
         LEFT JOIN Departments d ON d.Id = n.DepartmentId
         INNER JOIN Users creator ON creator.Id = n.CreatedBy

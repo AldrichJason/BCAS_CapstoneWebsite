@@ -11,8 +11,8 @@ public class AnnouncementRepository : IAnnouncementRepository
 
     private const string SelectColumns = @"
         a.Id, a.Title, a.Body, a.DepartmentId, d.Name AS DepartmentName, a.Status, a.PublishAtUtc,
-        a.CreatedBy, creator.FullName AS CreatedByName, a.CreatedAt,
-        a.UpdatedBy, updater.FullName AS UpdatedByName, a.UpdatedAt
+        a.CreatedBy, (creator.FirstName + ' ' + creator.LastName) AS CreatedByName, a.CreatedAt,
+        a.UpdatedBy, (updater.FirstName + ' ' + updater.LastName) AS UpdatedByName, a.UpdatedAt
         FROM Announcements a
         LEFT JOIN Departments d ON d.Id = a.DepartmentId
         INNER JOIN Users creator ON creator.Id = a.CreatedBy
@@ -38,6 +38,22 @@ public class AnnouncementRepository : IAnnouncementRepository
             WHERE a.DepartmentId = @DepartmentId
               AND (@Status IS NULL OR a.Status = @Status)
             ORDER BY a.PublishAtUtc {direction};";
+
+        using var connection = _connectionFactory.CreateConnection();
+        var rows = await connection.QueryAsync<Announcement>(sql, new { DepartmentId = departmentId, Status = status });
+        return rows.AsList();
+    }
+
+    public async Task<IReadOnlyList<Announcement>> GetAllAsync(int? departmentId, string? status)
+    {
+        var sql = $@"SELECT {SelectColumns}
+            WHERE (
+                    @DepartmentId IS NULL
+                 OR (@DepartmentId = 0 AND a.DepartmentId IS NULL)
+                 OR (@DepartmentId > 0 AND a.DepartmentId = @DepartmentId)
+                  )
+              AND (@Status IS NULL OR a.Status = @Status)
+            ORDER BY a.PublishAtUtc DESC;";
 
         using var connection = _connectionFactory.CreateConnection();
         var rows = await connection.QueryAsync<Announcement>(sql, new { DepartmentId = departmentId, Status = status });

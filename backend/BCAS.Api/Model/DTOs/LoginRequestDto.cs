@@ -4,8 +4,9 @@ namespace BCAS.Api.Model.DTOs;
 
 public class LoginRequestDto
 {
-    [Required, EmailAddress]
-    public string Email { get; set; } = string.Empty;
+    /// <summary>Either the account's email address or its username.</summary>
+    [Required]
+    public string EmailOrUsername { get; set; } = string.Empty;
 
     [Required]
     public string Password { get; set; } = string.Empty;

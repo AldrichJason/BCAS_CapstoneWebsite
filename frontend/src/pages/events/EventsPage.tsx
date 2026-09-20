@@ -5,6 +5,7 @@ import { CONTENT_STATUSES } from '../../types/news';
 import type { ContentStatusValue } from '../../types/news';
 import type { EventDto, EventRequest } from '../../types/event';
 import type { ErrorResponseDto } from '../../types/auth';
+import { StatusBadge } from '../../components/StatusBadge';
 
 function isAxiosErrorResponse(error: unknown): error is { response?: { data?: ErrorResponseDto } } {
   return typeof error === 'object' && error !== null && 'response' in error;
@@ -30,6 +31,14 @@ const emptyForm: EventRequest = {
   venue: '',
   status: 'Draft',
 };
+
+const inputClass =
+  'rounded-lg border border-neutral-300 px-2.5 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50';
+const labelClass = 'mb-1 text-xs font-semibold';
+const primaryButtonClass =
+  'rounded-lg bg-primary px-5 py-2.5 font-semibold text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:bg-neutral-400';
+const secondaryButtonClass =
+  'rounded-lg border border-neutral-300 px-5 py-2.5 font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-400';
 
 export function EventsPage() {
   const [items, setItems] = useState<EventDto[]>([]);
@@ -150,18 +159,23 @@ export function EventsPage() {
   }
 
   return (
-    <div className="content-page">
-      <div className="content-page-header">
-        <h2>Department Events</h2>
-        <button onClick={openCreateForm}>+ New Event</button>
+    <div className="mx-auto max-w-4xl px-6 py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-primary">Department Events</h1>
+        <button onClick={openCreateForm} className={primaryButtonClass}>
+          + New Event
+        </button>
       </div>
 
-      <div className="content-filters">
-        <label htmlFor="event-status-filter">Status</label>
+      <div className="mb-4 flex items-center gap-2">
+        <label htmlFor="event-status-filter" className="text-sm font-semibold text-neutral-700">
+          Status
+        </label>
         <select
           id="event-status-filter"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as ContentStatusValue | '')}
+          className={inputClass}
         >
           <option value="">All</option>
           {CONTENT_STATUSES.map((status) => (
@@ -172,77 +186,126 @@ export function EventsPage() {
         </select>
       </div>
 
-      {listError && <div className="form-error" role="alert">{listError}</div>}
+      {listError && (
+        <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+          {listError}
+        </div>
+      )}
 
       {isFormOpen && (
-        <form className="content-form" onSubmit={handleSubmit}>
-          <h3>{editingId === null ? 'New Event' : 'Edit Event'}</h3>
+        <form
+          className="mb-8 flex flex-col rounded-xl border-t-4 border-accent bg-white p-6 shadow-md"
+          onSubmit={handleSubmit}
+        >
+          <h2 className="mb-3 mt-0 text-lg font-semibold text-primary">
+            {editingId === null ? 'New Event' : 'Edit Event'}
+          </h2>
 
-          {formError && <div className="form-error" role="alert">{formError}</div>}
+          {formError && (
+            <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+              {formError}
+            </div>
+          )}
 
-          <label htmlFor="event-title">Title</label>
-          <input
-            id="event-title"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            disabled={isSubmitting}
-          />
+          <div className="mb-3 flex flex-col">
+            <label htmlFor="event-title" className={labelClass}>
+              Title
+            </label>
+            <input
+              id="event-title"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              disabled={isSubmitting}
+              className={inputClass}
+            />
+          </div>
 
-          <label htmlFor="event-description">Description</label>
-          <textarea
-            id="event-description"
-            rows={5}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            disabled={isSubmitting}
-          />
+          <div className="mb-3 flex flex-col">
+            <label htmlFor="event-description" className={labelClass}>
+              Description
+            </label>
+            <textarea
+              id="event-description"
+              rows={5}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              disabled={isSubmitting}
+              className={inputClass}
+            />
+          </div>
 
-          <label htmlFor="event-start">Start date/time</label>
-          <input
-            id="event-start"
-            type="datetime-local"
-            value={form.eventStartUtc}
-            onChange={(e) => setForm({ ...form, eventStartUtc: e.target.value })}
-            disabled={isSubmitting}
-          />
+          <div className="mb-3 flex gap-4">
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="event-start" className={labelClass}>
+                Start date/time
+              </label>
+              <input
+                id="event-start"
+                type="datetime-local"
+                value={form.eventStartUtc}
+                onChange={(e) => setForm({ ...form, eventStartUtc: e.target.value })}
+                disabled={isSubmitting}
+                className={inputClass}
+              />
+            </div>
 
-          <label htmlFor="event-end">End date/time (optional)</label>
-          <input
-            id="event-end"
-            type="datetime-local"
-            value={form.eventEndUtc ?? ''}
-            onChange={(e) => setForm({ ...form, eventEndUtc: e.target.value })}
-            disabled={isSubmitting}
-          />
-          {fieldErrors.eventEndUtc && <span className="field-error">{fieldErrors.eventEndUtc}</span>}
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="event-end" className={labelClass}>
+                End date/time (optional)
+              </label>
+              <input
+                id="event-end"
+                type="datetime-local"
+                value={form.eventEndUtc ?? ''}
+                onChange={(e) => setForm({ ...form, eventEndUtc: e.target.value })}
+                disabled={isSubmitting}
+                className={inputClass}
+              />
+              {fieldErrors.eventEndUtc && (
+                <span className="mt-1 text-xs text-red-700">{fieldErrors.eventEndUtc}</span>
+              )}
+            </div>
+          </div>
 
-          <label htmlFor="event-venue">Venue</label>
-          <input
-            id="event-venue"
-            value={form.venue}
-            onChange={(e) => setForm({ ...form, venue: e.target.value })}
-            disabled={isSubmitting}
-          />
+          <div className="mb-3 flex gap-4">
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="event-venue" className={labelClass}>
+                Venue
+              </label>
+              <input
+                id="event-venue"
+                value={form.venue}
+                onChange={(e) => setForm({ ...form, venue: e.target.value })}
+                disabled={isSubmitting}
+                className={inputClass}
+              />
+            </div>
 
-          <label htmlFor="event-status">Status</label>
-          <select
-            id="event-status"
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatusValue })}
-            disabled={isSubmitting}
-          >
-            {CONTENT_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="event-status" className={labelClass}>
+                Status
+              </label>
+              <select
+                id="event-status"
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatusValue })}
+                disabled={isSubmitting}
+                className={inputClass}
+              >
+                {CONTENT_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-          <div className="content-form-actions">
-            <button type="submit" disabled={isSubmitting}>
+          <div className="mt-2 flex gap-3">
+            <button type="submit" disabled={isSubmitting} className={primaryButtonClass}>
               {isSubmitting ? 'Saving...' : 'Save'}
             </button>
-            <button type="button" onClick={closeForm} disabled={isSubmitting} className="secondary">
+            <button type="button" onClick={closeForm} disabled={isSubmitting} className={secondaryButtonClass}>
               Cancel
             </button>
           </div>
@@ -252,34 +315,58 @@ export function EventsPage() {
       {isLoading ? (
         <p>Loading...</p>
       ) : items.length === 0 ? (
-        <p className="dashboard-placeholder">No events yet.</p>
+        <p className="text-neutral-500">No events yet.</p>
       ) : (
-        <table className="content-table">
+        <table className="w-full border-collapse overflow-hidden rounded-xl bg-white shadow-md">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Starts</th>
-              <th>Ends</th>
-              <th>Venue</th>
-              <th />
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Title
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Status
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Starts
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Ends
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Venue
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5"></th>
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.id}>
-                <td>{item.title}</td>
-                <td>
-                  <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{item.title}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  <StatusBadge status={item.status} />
                 </td>
-                <td>{new Date(item.eventStartUtc).toLocaleString()}</td>
-                <td>{item.eventEndUtc ? new Date(item.eventEndUtc).toLocaleString() : ''}</td>
-                <td>{item.venue}</td>
-                <td className="content-table-actions">
-                  <button onClick={() => openEditForm(item)}>Edit</button>
-                  <button onClick={() => handleDelete(item)} className="danger">
-                    Delete
-                  </button>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  {new Date(item.eventStartUtc).toLocaleString()}
+                </td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  {item.eventEndUtc ? new Date(item.eventEndUtc).toLocaleString() : ''}
+                </td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{item.venue}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditForm(item)}
+                      className="rounded-md border border-neutral-300 px-3 py-1.5 font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item)}
+                      className="rounded-md border border-red-300 px-3 py-1.5 font-semibold text-red-700 transition-colors hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

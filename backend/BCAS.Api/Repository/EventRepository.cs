@@ -12,8 +12,8 @@ public class EventRepository : IEventRepository
     private const string SelectColumns = @"
         e.Id, e.Title, e.Body AS Description, e.EventStartUtc, e.EventEndUtc, e.Location AS Venue,
         e.DepartmentId, d.Name AS DepartmentName, e.Status,
-        e.CreatedBy, creator.FullName AS CreatedByName, e.CreatedAt,
-        e.UpdatedBy, updater.FullName AS UpdatedByName, e.UpdatedAt
+        e.CreatedBy, (creator.FirstName + ' ' + creator.LastName) AS CreatedByName, e.CreatedAt,
+        e.UpdatedBy, (updater.FirstName + ' ' + updater.LastName) AS UpdatedByName, e.UpdatedAt
         FROM Events e
         LEFT JOIN Departments d ON d.Id = e.DepartmentId
         INNER JOIN Users creator ON creator.Id = e.CreatedBy
@@ -36,6 +36,22 @@ public class EventRepository : IEventRepository
     {
         var sql = $@"SELECT {SelectColumns}
             WHERE e.DepartmentId = @DepartmentId
+              AND (@Status IS NULL OR e.Status = @Status)
+            ORDER BY e.EventStartUtc DESC;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        var rows = await connection.QueryAsync<Event>(sql, new { DepartmentId = departmentId, Status = status });
+        return rows.AsList();
+    }
+
+    public async Task<IReadOnlyList<Event>> GetAllAsync(int? departmentId, string? status)
+    {
+        var sql = $@"SELECT {SelectColumns}
+            WHERE (
+                    @DepartmentId IS NULL
+                 OR (@DepartmentId = 0 AND e.DepartmentId IS NULL)
+                 OR (@DepartmentId > 0 AND e.DepartmentId = @DepartmentId)
+                  )
               AND (@Status IS NULL OR e.Status = @Status)
             ORDER BY e.EventStartUtc DESC;";
 

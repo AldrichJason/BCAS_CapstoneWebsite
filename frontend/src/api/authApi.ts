@@ -1,8 +1,28 @@
 import { apiClient } from './client';
-import type { LoginResponseDto, UserDto } from '../types/auth';
+import type { LoginResponseDto, MessageResponseDto, UserDto } from '../types/auth';
 
-export async function login(email: string, password: string): Promise<LoginResponseDto> {
-  const response = await apiClient.post<LoginResponseDto>('/auth/login', { email, password });
+export async function login(emailOrUsername: string, password: string): Promise<LoginResponseDto> {
+  const response = await apiClient.post<LoginResponseDto>('/auth/login', { emailOrUsername, password });
+  return response.data;
+}
+
+export async function forgotPassword(email: string): Promise<MessageResponseDto> {
+  const response = await apiClient.post<MessageResponseDto>('/auth/forgot-password', { email });
+  return response.data;
+}
+
+export async function resetPassword(
+  email: string,
+  code: string,
+  newPassword: string,
+  confirmPassword: string,
+): Promise<MessageResponseDto> {
+  const response = await apiClient.post<MessageResponseDto>('/auth/reset-password', {
+    email,
+    code,
+    newPassword,
+    confirmPassword,
+  });
   return response.data;
 }
 

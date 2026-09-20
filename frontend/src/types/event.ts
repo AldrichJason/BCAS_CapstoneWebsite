@@ -9,6 +9,7 @@ export interface EventDto {
   venue: string | null;
   departmentId: number | null;
   departmentName: string | null;
+  isSchoolWide: boolean;
   status: ContentStatusValue;
   createdByName: string | null;
   createdAt: string;

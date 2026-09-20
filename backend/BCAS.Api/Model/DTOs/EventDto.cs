@@ -10,6 +10,7 @@ public class EventDto
     public string? Venue { get; set; }
     public int? DepartmentId { get; set; }
     public string? DepartmentName { get; set; }
+    public bool IsSchoolWide => DepartmentId is null;
     public string Status { get; set; } = string.Empty;
     public string? CreatedByName { get; set; }
     public DateTime CreatedAt { get; set; }

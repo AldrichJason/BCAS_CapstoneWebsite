@@ -1,7 +1,7 @@
 # BCAS Capstone Website
 
-Admin portal for BCAS: ASP.NET Core Web API (C#) + Dapper backend, React + TypeScript
-frontend, SQL Server database.
+Admin portal for BCAS: ASP.NET Core Web API (C#) + Dapper backend, React + TypeScript +
+Tailwind CSS frontend, SQL Server database.
 
 ## Repository structure
 
@@ -86,8 +86,25 @@ sqlcmd -S <server> -d BcasCapstone -i database/seed.sql
 Seed data creates the four departments (rename them in `seed.sql` to match the school's actual
 departments), the four roles, and an initial Super Admin:
 
+- Username: `superadmin`
 - Email: `superadmin@bcas.edu.ph`
 - Password: `ChangeMe123!` — change this immediately after first login.
+- Login accepts either the username or the email.
+
+### Updating the schema after a pull
+
+No migration files — `schema.sql` is the single source of truth and is always kept current. If
+you pull changes that touch the database, just re-run both scripts:
+
+```bash
+sqlcmd -S <server> -d BcasCapstone -i database/schema.sql
+sqlcmd -S <server> -d BcasCapstone -i database/seed.sql
+```
+
+`schema.sql` drops and recreates every table, so this wipes any accounts/data you've created —
+`seed.sql` immediately restores the Super Admin (and departments/roles) afterward, but anything
+else (test accounts, etc.) needs to be recreated through the app. Acceptable during active
+development; revisit with real migrations before this ever holds production data.
 
 ## Frontend setup
 
@@ -118,14 +135,31 @@ The dev server runs at `http://localhost:5173` and expects the API at
 
 ## Current implementation status
 
-Implements the Sprint 1 authentication foundation:
+Implements the full Sprint 1 authentication & account-management slice:
 
 - **BW-8** – this scaffold (backend/frontend/database structure, linting, `.gitignore`).
 - **BW-9** – `database/schema.sql` and `database/seed.sql`.
 - **BW-10** – `POST /api/auth/login` (backend) + login page (frontend).
 - **BW-11** – `POST /api/auth/logout`, server-side token revocation.
 - **BW-12** – `GET /api/auth/session`, session restore on app load.
+- **BW-13** – `POST /api/auth/forgot-password` / `POST /api/auth/reset-password`. Emails a
+  single-use 6-digit code (hashed, 30 min expiry); the reset page is an email + code + new
+  password + confirm form.
+- **BW-14** – `POST /api/admin/accounts` (Super Admin only), role + department-scope validation,
+  duplicate-email/-username rejection. The Super Admin can either set the initial password
+  directly on the form, or leave it blank to email an invite code (same reset-password page/flow
+  as BW-13). Every account has both a `Username` and an `Email`; login accepts either.
+- **BW-15** – `PATCH /api/admin/accounts/{id}/status` (Super Admin only) toggles an account
+  active/inactive; deactivated accounts are rejected on their next request via
+  `ActiveSessionMiddleware`; a Super Admin can't deactivate their own account.
 
-Not yet implemented (left for follow-up tickets): **BW-13** forgot/reset password (needs an
-email provider), **BW-14** admin account provisioning, **BW-15** account activation toggle, and
-role-specific dashboards beyond the placeholder in `DashboardPage.tsx`.
+### Email in local development
+
+`Smtp:Host` is empty by default, so `EmailSender` logs the reset/invite email (recipient,
+subject, body with the code) to the console instead of sending it, and the API response also
+includes the code as `devPreviewCode`/`inviteCode` (only when `Development` + no SMTP configured
+— never in production) so the frontend can show it directly without checking the terminal. Set
+`Smtp:Host`/`Port`/`Username`/`Password` in `appsettings.Development.json` to send through a real
+SMTP provider (e.g. Gmail) instead.
+
+Still open: role-specific dashboards beyond the placeholder in `DashboardPage.tsx`.

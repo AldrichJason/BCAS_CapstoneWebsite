@@ -12,10 +12,12 @@ namespace BCAS.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IPasswordResetService _passwordResetService;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IPasswordResetService passwordResetService)
     {
         _authService = authService;
+        _passwordResetService = passwordResetService;
     }
 
     // BW-10: Role-based login with JWT authentication.
@@ -28,13 +30,14 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var result = await _authService.LoginAsync(request);
-        if (result is null)
-        {
-            return Unauthorized(new ErrorResponseDto("Invalid email or password."));
-        }
+        var (result, response) = await _authService.LoginAsync(request);
 
-        return Ok(result);
+        return result switch
+        {
+            LoginResult.Success => Ok(response),
+            LoginResult.AccountDeactivated => Unauthorized(new ErrorResponseDto("This account has been deactivated. Contact your Super Admin.")),
+            _ => Unauthorized(new ErrorResponseDto("Invalid credentials.")),
+        };
     }
 
     // BW-12: Session check endpoint with role and department scope.
@@ -72,5 +75,41 @@ public class AuthController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    // BW-13: Forgot password. Always returns the same response so the
+    // endpoint can't be used to enumerate which emails have accounts.
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<ActionResult<MessageResponseDto>> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var devPreviewCode = await _passwordResetService.RequestPasswordResetAsync(request.Email);
+
+        return Ok(new MessageResponseDto(
+            "If an account exists for that email, a reset code has been sent.", devPreviewCode));
+    }
+
+    // BW-13: Reset password using the single-use 6-digit code from the emailed message.
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<ActionResult<MessageResponseDto>> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await _passwordResetService.ResetPasswordAsync(request.Email, request.Code, request.NewPassword);
+        if (result == ResetPasswordResult.InvalidOrExpiredToken)
+        {
+            return BadRequest(new ErrorResponseDto("That code is invalid or has expired. Please request a new one."));
+        }
+
+        return Ok(new MessageResponseDto("Your password has been reset. You can now sign in."));
     }
 }

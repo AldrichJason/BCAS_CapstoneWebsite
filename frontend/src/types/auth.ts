@@ -1,6 +1,8 @@
 export interface UserDto {
   id: number;
-  fullName: string;
+  firstName: string;
+  lastName: string;
+  username: string;
   email: string;
   role: string;
   departmentId: number | null;
@@ -15,4 +17,10 @@ export interface LoginResponseDto {
 
 export interface ErrorResponseDto {
   message: string;
+}
+
+export interface MessageResponseDto {
+  message: string;
+  /** Local-dev-only convenience: present when no SMTP server is configured. */
+  devPreviewCode?: string | null;
 }
