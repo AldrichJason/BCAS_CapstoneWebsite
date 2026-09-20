@@ -1,5 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { RoleNames } from '../types/roles';
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
@@ -22,6 +23,21 @@ export function DashboardPage() {
         </div>
         <button onClick={handleLogout}>Log out</button>
       </header>
+
+      {user?.role === RoleNames.AcademicHead && (
+        <nav className="dashboard-nav">
+          <Link to="/news">Department News</Link>
+          <Link to="/announcements">Announcements</Link>
+          <Link to="/events">Events</Link>
+        </nav>
+      )}
+
+      {user?.role === RoleNames.SuperAdmin && (
+        <nav className="dashboard-nav">
+          <Link to="/admin/news">School News</Link>
+        </nav>
+      )}
+
       <p className="dashboard-placeholder">
         Role-specific dashboard content will be built out in the following sprint tickets.
       </p>
