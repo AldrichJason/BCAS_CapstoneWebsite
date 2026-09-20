@@ -199,11 +199,6 @@ public class EventService : IEventService
             return ScopedResult<EventDto>.NotFound();
         }
 
-        if (existing.DepartmentId is not null)
-        {
-            return ScopedResult<EventDto>.Forbidden();
-        }
-
         if (!ContentStatus.IsValid(request.Status))
         {
             return ScopedResult<EventDto>.Invalid($"Status must be one of: {string.Join(", ", ContentStatus.All)}.");
@@ -229,7 +224,7 @@ public class EventService : IEventService
         }
 
         await _activityLog.LogAsync(userId, "EventUpdated", "Event", id,
-            JsonSerializer.Serialize(new { existing.Title, existing.Status, Scope = "SchoolWide" }));
+            JsonSerializer.Serialize(new { existing.Title, existing.Status, existing.DepartmentId }));
 
         var refreshed = await _eventRepository.GetByIdAsync(id);
         return ScopedResult<EventDto>.Ok(MapToDto(refreshed!));
@@ -243,11 +238,6 @@ public class EventService : IEventService
             return ScopedResult<bool>.NotFound();
         }
 
-        if (existing.DepartmentId is not null)
-        {
-            return ScopedResult<bool>.Forbidden();
-        }
-
         var deleted = await _eventRepository.DeleteAsync(id);
         if (!deleted)
         {
@@ -255,7 +245,7 @@ public class EventService : IEventService
         }
 
         await _activityLog.LogAsync(userId, "EventDeleted", "Event", id,
-            JsonSerializer.Serialize(new { existing.Title, Scope = "SchoolWide" }));
+            JsonSerializer.Serialize(new { existing.Title, existing.DepartmentId }));
 
         return ScopedResult<bool>.Ok(true);
     }

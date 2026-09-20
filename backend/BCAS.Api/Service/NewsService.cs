@@ -178,13 +178,6 @@ public class NewsService : INewsService
             return ScopedResult<NewsDto>.NotFound();
         }
 
-        // Editing department News is the Academic Head's job (BW-16); Super Admin manages
-        // school-wide items only through this endpoint.
-        if (existing.DepartmentId is not null)
-        {
-            return ScopedResult<NewsDto>.Forbidden();
-        }
-
         if (!ContentStatus.IsValid(request.Status))
         {
             return ScopedResult<NewsDto>.Invalid($"Status must be one of: {string.Join(", ", ContentStatus.All)}.");
@@ -203,7 +196,7 @@ public class NewsService : INewsService
         }
 
         await _activityLog.LogAsync(userId, "NewsUpdated", "News", id,
-            JsonSerializer.Serialize(new { existing.Title, existing.Status, Scope = "SchoolWide" }));
+            JsonSerializer.Serialize(new { existing.Title, existing.Status, existing.DepartmentId }));
 
         var refreshed = await _newsRepository.GetByIdAsync(id);
         return ScopedResult<NewsDto>.Ok(MapToDto(refreshed!));
@@ -217,11 +210,6 @@ public class NewsService : INewsService
             return ScopedResult<bool>.NotFound();
         }
 
-        if (existing.DepartmentId is not null)
-        {
-            return ScopedResult<bool>.Forbidden();
-        }
-
         var deleted = await _newsRepository.DeleteAsync(id);
         if (!deleted)
         {
@@ -229,7 +217,7 @@ public class NewsService : INewsService
         }
 
         await _activityLog.LogAsync(userId, "NewsDeleted", "News", id,
-            JsonSerializer.Serialize(new { existing.Title, Scope = "SchoolWide" }));
+            JsonSerializer.Serialize(new { existing.Title, existing.DepartmentId }));
 
         return ScopedResult<bool>.Ok(true);
     }

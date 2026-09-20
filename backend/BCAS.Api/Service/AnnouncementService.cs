@@ -179,11 +179,6 @@ public class AnnouncementService : IAnnouncementService
             return ScopedResult<AnnouncementDto>.NotFound();
         }
 
-        if (existing.DepartmentId is not null)
-        {
-            return ScopedResult<AnnouncementDto>.Forbidden();
-        }
-
         if (!ContentStatus.IsValid(request.Status))
         {
             return ScopedResult<AnnouncementDto>.Invalid($"Status must be one of: {string.Join(", ", ContentStatus.All)}.");
@@ -202,7 +197,7 @@ public class AnnouncementService : IAnnouncementService
         }
 
         await _activityLog.LogAsync(userId, "AnnouncementUpdated", "Announcement", id,
-            JsonSerializer.Serialize(new { existing.Title, existing.Status, Scope = "SchoolWide" }));
+            JsonSerializer.Serialize(new { existing.Title, existing.Status, existing.DepartmentId }));
 
         var refreshed = await _announcementRepository.GetByIdAsync(id);
         return ScopedResult<AnnouncementDto>.Ok(MapToDto(refreshed!));
@@ -216,11 +211,6 @@ public class AnnouncementService : IAnnouncementService
             return ScopedResult<bool>.NotFound();
         }
 
-        if (existing.DepartmentId is not null)
-        {
-            return ScopedResult<bool>.Forbidden();
-        }
-
         var deleted = await _announcementRepository.DeleteAsync(id);
         if (!deleted)
         {
@@ -228,7 +218,7 @@ public class AnnouncementService : IAnnouncementService
         }
 
         await _activityLog.LogAsync(userId, "AnnouncementDeleted", "Announcement", id,
-            JsonSerializer.Serialize(new { existing.Title, Scope = "SchoolWide" }));
+            JsonSerializer.Serialize(new { existing.Title, existing.DepartmentId }));
 
         return ScopedResult<bool>.Ok(true);
     }

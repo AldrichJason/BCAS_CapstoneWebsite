@@ -227,8 +227,8 @@ export function NewsAdminPage() {
             {editingId === null ? 'New School-Wide Article' : 'Edit School-Wide Article'}
           </h2>
           <p className="mb-4 text-xs text-neutral-500">
-            School-wide articles are visible to every department. Department-specific News is
-            managed by each department's Academic Head.
+            New articles created here are school-wide, visible to every department. You can
+            also edit or delete any department's News from the list below.
           </p>
 
           {formError && (
@@ -359,24 +359,20 @@ export function NewsAdminPage() {
                   {new Date(item.updatedAt ?? item.createdAt).toLocaleString()}
                 </td>
                 <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
-                  {item.isSchoolWide ? (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openEditForm(item)}
-                        className="rounded-md border border-neutral-300 px-3 py-1.5 font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item)}
-                        className="rounded-md border border-red-300 px-3 py-1.5 font-semibold text-red-700 transition-colors hover:bg-red-50"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="text-xs italic text-neutral-400">Managed by department</span>
-                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditForm(item)}
+                      className="rounded-md border border-neutral-300 px-3 py-1.5 font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item)}
+                      className="rounded-md border border-red-300 px-3 py-1.5 font-semibold text-red-700 transition-colors hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
