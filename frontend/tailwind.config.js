@@ -5,15 +5,15 @@ export default {
     extend: {
       colors: {
         primary: {
-          light: '#1f5c3f',
-          DEFAULT: '#14432d',
-          dark: '#0d2e1e',
-          tint: '#e7f0ea',
+          light: '#1d744b',
+          DEFAULT: '#0f3b26',
+          dark: '#071a11',
+          tint: '#eaf5f0',
         },
         accent: {
-          tint: '#fbf1d3',
-          DEFAULT: '#c9a227',
-          dark: '#a3841f',
+          tint: '#e1d6b0',
+          DEFAULT: '#d4af37',
+          dark: '#a18323',
         },
       },
     },

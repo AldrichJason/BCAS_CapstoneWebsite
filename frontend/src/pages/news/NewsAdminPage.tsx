@@ -6,6 +6,7 @@ import { CONTENT_STATUSES } from '../../types/news';
 import type { ContentStatusValue, NewsDto, NewsRequest } from '../../types/news';
 import type { DepartmentDto } from '../../types/department';
 import type { ErrorResponseDto } from '../../types/auth';
+import { StatusBadge } from '../../components/StatusBadge';
 
 function isAxiosErrorResponse(error: unknown): error is { response?: { data?: ErrorResponseDto } } {
   return typeof error === 'object' && error !== null && 'response' in error;
@@ -31,6 +32,14 @@ const emptyForm: NewsRequest = {
   publishAtUtc: '',
   status: 'Draft',
 };
+
+const inputClass =
+  'rounded-lg border border-neutral-300 px-2.5 py-2 text-sm focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:bg-neutral-50';
+const labelClass = 'mb-1 text-xs font-semibold';
+const primaryButtonClass =
+  'rounded-lg bg-primary px-5 py-2.5 font-semibold text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:bg-neutral-400';
+const secondaryButtonClass =
+  'rounded-lg border border-neutral-300 px-5 py-2.5 font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-400';
 
 export function NewsAdminPage() {
   const [items, setItems] = useState<NewsDto[]>([]);
@@ -154,100 +163,147 @@ export function NewsAdminPage() {
   }
 
   return (
-    <div className="content-page">
-      <div className="content-page-header">
-        <h2>School News (All Departments)</h2>
-        <button onClick={openCreateForm}>+ New School-Wide Article</button>
+    <div className="mx-auto max-w-4xl px-6 py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-primary">School News (All Departments)</h1>
+        <button onClick={openCreateForm} className={primaryButtonClass}>
+          + New School-Wide Article
+        </button>
       </div>
 
-      <div className="content-filters">
-        <label htmlFor="department-filter">Department</label>
-        <select
-          id="department-filter"
-          value={departmentFilter}
-          onChange={(e) => setDepartmentFilter(e.target.value)}
-        >
-          <option value="">All</option>
-          <option value={SCHOOL_WIDE_FILTER}>School-wide only</option>
-          {departments.map((dept) => (
-            <option key={dept.id} value={dept.id}>
-              {dept.name}
-            </option>
-          ))}
-        </select>
-
-        <label htmlFor="status-filter">Status</label>
-        <select
-          id="status-filter"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as ContentStatusValue | '')}
-        >
-          <option value="">All</option>
-          {CONTENT_STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {listError && <div className="form-error" role="alert">{listError}</div>}
-
-      {isFormOpen && (
-        <form className="content-form" onSubmit={handleSubmit}>
-          <h3>{editingId === null ? 'New School-Wide Article' : 'Edit School-Wide Article'}</h3>
-          <p className="content-form-hint">
-            School-wide articles are visible to every department. Department-specific News is
-            managed by each department's Academic Head.
-          </p>
-
-          {formError && <div className="form-error" role="alert">{formError}</div>}
-
-          <label htmlFor="admin-news-title">Title</label>
-          <input
-            id="admin-news-title"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            disabled={isSubmitting}
-          />
-
-          <label htmlFor="admin-news-body">Body</label>
-          <textarea
-            id="admin-news-body"
-            rows={6}
-            value={form.body}
-            onChange={(e) => setForm({ ...form, body: e.target.value })}
-            disabled={isSubmitting}
-          />
-
-          <label htmlFor="admin-news-publish">Publish date</label>
-          <input
-            id="admin-news-publish"
-            type="datetime-local"
-            value={form.publishAtUtc}
-            onChange={(e) => setForm({ ...form, publishAtUtc: e.target.value })}
-            disabled={isSubmitting}
-          />
-
-          <label htmlFor="admin-news-status">Status</label>
+      <div className="mb-4 flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <label htmlFor="department-filter" className="text-sm font-semibold text-neutral-700">
+            Department
+          </label>
           <select
-            id="admin-news-status"
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatusValue })}
-            disabled={isSubmitting}
+            id="department-filter"
+            value={departmentFilter}
+            onChange={(e) => setDepartmentFilter(e.target.value)}
+            className={inputClass}
           >
+            <option value="">All</option>
+            <option value={SCHOOL_WIDE_FILTER}>School-wide only</option>
+            {departments.map((dept) => (
+              <option key={dept.id} value={dept.id}>
+                {dept.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label htmlFor="status-filter" className="text-sm font-semibold text-neutral-700">
+            Status
+          </label>
+          <select
+            id="status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as ContentStatusValue | '')}
+            className={inputClass}
+          >
+            <option value="">All</option>
             {CONTENT_STATUSES.map((status) => (
               <option key={status} value={status}>
                 {status}
               </option>
             ))}
           </select>
+        </div>
+      </div>
 
-          <div className="content-form-actions">
-            <button type="submit" disabled={isSubmitting}>
+      {listError && (
+        <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+          {listError}
+        </div>
+      )}
+
+      {isFormOpen && (
+        <form
+          className="mb-8 flex flex-col rounded-xl border-t-4 border-accent bg-white p-6 shadow-md"
+          onSubmit={handleSubmit}
+        >
+          <h2 className="mb-1 mt-0 text-lg font-semibold text-primary">
+            {editingId === null ? 'New School-Wide Article' : 'Edit School-Wide Article'}
+          </h2>
+          <p className="mb-4 text-xs text-neutral-500">
+            School-wide articles are visible to every department. Department-specific News is
+            managed by each department's Academic Head.
+          </p>
+
+          {formError && (
+            <div className="mb-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+              {formError}
+            </div>
+          )}
+
+          <div className="mb-3 flex flex-col">
+            <label htmlFor="admin-news-title" className={labelClass}>
+              Title
+            </label>
+            <input
+              id="admin-news-title"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              disabled={isSubmitting}
+              className={inputClass}
+            />
+          </div>
+
+          <div className="mb-3 flex flex-col">
+            <label htmlFor="admin-news-body" className={labelClass}>
+              Body
+            </label>
+            <textarea
+              id="admin-news-body"
+              rows={6}
+              value={form.body}
+              onChange={(e) => setForm({ ...form, body: e.target.value })}
+              disabled={isSubmitting}
+              className={inputClass}
+            />
+          </div>
+
+          <div className="mb-3 flex gap-4">
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="admin-news-publish" className={labelClass}>
+                Publish date
+              </label>
+              <input
+                id="admin-news-publish"
+                type="datetime-local"
+                value={form.publishAtUtc}
+                onChange={(e) => setForm({ ...form, publishAtUtc: e.target.value })}
+                disabled={isSubmitting}
+                className={inputClass}
+              />
+            </div>
+
+            <div className="flex flex-1 flex-col">
+              <label htmlFor="admin-news-status" className={labelClass}>
+                Status
+              </label>
+              <select
+                id="admin-news-status"
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatusValue })}
+                disabled={isSubmitting}
+                className={inputClass}
+              >
+                {CONTENT_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="mt-2 flex gap-3">
+            <button type="submit" disabled={isSubmitting} className={primaryButtonClass}>
               {isSubmitting ? 'Saving...' : 'Save'}
             </button>
-            <button type="button" onClick={closeForm} disabled={isSubmitting} className="secondary">
+            <button type="button" onClick={closeForm} disabled={isSubmitting} className={secondaryButtonClass}>
               Cancel
             </button>
           </div>
@@ -257,45 +313,69 @@ export function NewsAdminPage() {
       {isLoading ? (
         <p>Loading...</p>
       ) : items.length === 0 ? (
-        <p className="dashboard-placeholder">No news articles found.</p>
+        <p className="text-neutral-500">No news articles found.</p>
       ) : (
-        <table className="content-table">
+        <table className="w-full border-collapse overflow-hidden rounded-xl bg-white shadow-md">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Scope</th>
-              <th>Status</th>
-              <th>Author</th>
-              <th>Last updated</th>
-              <th />
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Title
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Scope
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Status
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Author
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5 text-left text-sm font-semibold text-primary">
+                Last updated
+              </th>
+              <th className="border-b border-neutral-200 bg-primary-tint px-4 py-2.5"></th>
             </tr>
           </thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.id}>
-                <td>{item.title}</td>
-                <td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{item.title}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
                   {item.isSchoolWide ? (
-                    <span className="scope-badge scope-schoolwide">School-wide</span>
+                    <span className="rounded-full bg-accent-tint px-2.5 py-0.5 text-xs font-semibold text-accent-dark">
+                      School-wide
+                    </span>
                   ) : (
-                    <span className="scope-badge scope-department">{item.departmentName}</span>
+                    <span className="rounded-full bg-primary-tint px-2.5 py-0.5 text-xs font-semibold text-primary">
+                      {item.departmentName}
+                    </span>
                   )}
                 </td>
-                <td>
-                  <span className={`status-badge status-${item.status.toLowerCase()}`}>{item.status}</span>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  <StatusBadge status={item.status} />
                 </td>
-                <td>{item.createdByName}</td>
-                <td>{new Date(item.updatedAt ?? item.createdAt).toLocaleString()}</td>
-                <td className="content-table-actions">
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">{item.createdByName}</td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
+                  {new Date(item.updatedAt ?? item.createdAt).toLocaleString()}
+                </td>
+                <td className="border-b border-neutral-200 px-4 py-2.5 text-sm">
                   {item.isSchoolWide ? (
-                    <>
-                      <button onClick={() => openEditForm(item)}>Edit</button>
-                      <button onClick={() => handleDelete(item)} className="danger">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openEditForm(item)}
+                        className="rounded-md border border-neutral-300 px-3 py-1.5 font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item)}
+                        className="rounded-md border border-red-300 px-3 py-1.5 font-semibold text-red-700 transition-colors hover:bg-red-50"
+                      >
                         Delete
                       </button>
-                    </>
+                    </div>
                   ) : (
-                    <span className="content-table-readonly">Managed by department</span>
+                    <span className="text-xs italic text-neutral-400">Managed by department</span>
                   )}
                 </td>
               </tr>
