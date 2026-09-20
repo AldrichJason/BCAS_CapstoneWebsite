@@ -139,6 +139,10 @@ CREATE TABLE dbo.Announcements
 );
 GO
 
+-- Supports department-scoped list views filtered by status and sorted by date (BW-18).
+CREATE INDEX IX_Announcements_DepartmentId_Status ON dbo.Announcements(DepartmentId, Status);
+GO
+
 CREATE TABLE dbo.Events
 (
     Id              INT IDENTITY(1,1) PRIMARY KEY,

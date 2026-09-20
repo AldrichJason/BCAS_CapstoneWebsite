@@ -27,6 +27,7 @@ export function DashboardPage() {
       {user?.role === RoleNames.AcademicHead && (
         <nav className="dashboard-nav">
           <Link to="/news">Department News</Link>
+          <Link to="/announcements">Announcements</Link>
         </nav>
       )}
 
