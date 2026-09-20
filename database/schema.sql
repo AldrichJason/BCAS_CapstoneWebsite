@@ -118,6 +118,10 @@ CREATE TABLE dbo.News
 );
 GO
 
+-- Supports department-scoped list views filtered by status (BW-16, BW-17).
+CREATE INDEX IX_News_DepartmentId_Status ON dbo.News(DepartmentId, Status);
+GO
+
 CREATE TABLE dbo.Announcements
 (
     Id              INT IDENTITY(1,1) PRIMARY KEY,
@@ -135,6 +139,10 @@ CREATE TABLE dbo.Announcements
     CONSTRAINT FK_Announcements_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES dbo.Users(Id),
     CONSTRAINT CK_Announcements_Status CHECK (Status IN ('Draft','Scheduled','Published','Archived'))
 );
+GO
+
+-- Supports department-scoped list views filtered by status and sorted by date (BW-18).
+CREATE INDEX IX_Announcements_DepartmentId_Status ON dbo.Announcements(DepartmentId, Status);
 GO
 
 CREATE TABLE dbo.Events
@@ -155,8 +163,14 @@ CREATE TABLE dbo.Events
     CONSTRAINT FK_Events_Departments FOREIGN KEY (DepartmentId) REFERENCES dbo.Departments(Id),
     CONSTRAINT FK_Events_CreatedBy FOREIGN KEY (CreatedBy) REFERENCES dbo.Users(Id),
     CONSTRAINT FK_Events_UpdatedBy FOREIGN KEY (UpdatedBy) REFERENCES dbo.Users(Id),
-    CONSTRAINT CK_Events_Status CHECK (Status IN ('Draft','Scheduled','Published','Archived'))
+    CONSTRAINT CK_Events_Status CHECK (Status IN ('Draft','Scheduled','Published','Archived')),
+    -- BW-19 AC: end date/time must not precede the start date/time.
+    CONSTRAINT CK_Events_EndNotBeforeStart CHECK (EventEndUtc IS NULL OR EventEndUtc >= EventStartUtc)
 );
+GO
+
+-- Supports department-scoped list views filtered by status (BW-19).
+CREATE INDEX IX_Events_DepartmentId_Status ON dbo.Events(DepartmentId, Status);
 GO
 
 CREATE TABLE dbo.AcademicPrograms

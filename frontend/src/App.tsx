@@ -7,6 +7,11 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AdminAccountsPage } from './pages/AdminAccountsPage';
+import { NewsPage } from './pages/news/NewsPage';
+import { NewsAdminPage } from './pages/news/NewsAdminPage';
+import { AnnouncementsPage } from './pages/announcements/AnnouncementsPage';
+import { EventsPage } from './pages/events/EventsPage';
+import { RoleNames } from './types/roles';
 
 export function App() {
   return (
@@ -20,6 +25,14 @@ export function App() {
           <Route element={<SuperAdminRoute />}>
             <Route path="/admin/accounts" element={<AdminAccountsPage />} />
           </Route>
+        </Route>
+        <Route element={<ProtectedRoute roles={[RoleNames.AcademicHead]} />}>
+          <Route path="/news" element={<NewsPage />} />
+          <Route path="/announcements" element={<AnnouncementsPage />} />
+          <Route path="/events" element={<EventsPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={[RoleNames.SuperAdmin]} />}>
+          <Route path="/admin/news" element={<NewsAdminPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
