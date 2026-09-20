@@ -91,23 +91,20 @@ departments), the four roles, and an initial Super Admin:
 - Password: `ChangeMe123!` — change this immediately after first login.
 - Login accepts either the username or the email.
 
-### Updating an existing database
+### Updating the schema after a pull
 
-If your database predates one of the changes below, don't re-run `schema.sql` — it drops and
-recreates every table, which would wipe your data. Instead run whichever one-off migrations you
-haven't applied yet, in order, against your existing database:
+No migration files — `schema.sql` is the single source of truth and is always kept current. If
+you pull changes that touch the database, just re-run both scripts:
 
 ```bash
-sqlcmd -S <server> -d BcasCapstone -i database/migrations/001_add_username_to_users.sql
-sqlcmd -S <server> -d BcasCapstone -i database/migrations/002_split_fullname_to_first_last.sql
+sqlcmd -S <server> -d BcasCapstone -i database/schema.sql
+sqlcmd -S <server> -d BcasCapstone -i database/seed.sql
 ```
 
-- **001** adds `Users.Username` (backfilled from each account's email).
-- **002** replaces `Users.FullName` with separate `FirstName`/`LastName` columns (backfilled by
-  splitting the existing full name on its first space).
-
-A fresh `schema.sql` run (new database) already includes both — you only need these migrations
-if you set the database up before they existed.
+`schema.sql` drops and recreates every table, so this wipes any accounts/data you've created —
+`seed.sql` immediately restores the Super Admin (and departments/roles) afterward, but anything
+else (test accounts, etc.) needs to be recreated through the app. Acceptable during active
+development; revisit with real migrations before this ever holds production data.
 
 ## Frontend setup
 
