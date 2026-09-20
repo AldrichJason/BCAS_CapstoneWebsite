@@ -43,6 +43,22 @@ public class NewsRepository : INewsRepository
         return rows.AsList();
     }
 
+    public async Task<IReadOnlyList<News>> GetAllAsync(int? departmentId, string? status)
+    {
+        var sql = $@"SELECT {SelectColumns}
+            WHERE (
+                    @DepartmentId IS NULL
+                 OR (@DepartmentId = 0 AND n.DepartmentId IS NULL)
+                 OR (@DepartmentId > 0 AND n.DepartmentId = @DepartmentId)
+                  )
+              AND (@Status IS NULL OR n.Status = @Status)
+            ORDER BY n.UpdatedAt DESC, n.CreatedAt DESC;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        var rows = await connection.QueryAsync<News>(sql, new { DepartmentId = departmentId, Status = status });
+        return rows.AsList();
+    }
+
     public async Task<int> CreateAsync(News news)
     {
         const string sql = @"

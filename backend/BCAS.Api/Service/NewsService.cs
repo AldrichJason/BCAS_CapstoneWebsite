@@ -132,6 +132,108 @@ public class NewsService : INewsService
         return ScopedResult<bool>.Ok(true);
     }
 
+    public async Task<IReadOnlyList<NewsDto>> GetAllForAdminAsync(int? departmentId, string? status)
+    {
+        var rows = await _newsRepository.GetAllAsync(departmentId, status);
+        return rows.Select(MapToDto).ToList();
+    }
+
+    public async Task<NewsDto?> GetByIdForAdminAsync(int id)
+    {
+        var news = await _newsRepository.GetByIdAsync(id);
+        return news is null ? null : MapToDto(news);
+    }
+
+    public async Task<ScopedResult<NewsDto>> CreateSchoolWideAsync(int userId, NewsRequestDto request)
+    {
+        if (!ContentStatus.IsValid(request.Status))
+        {
+            return ScopedResult<NewsDto>.Invalid($"Status must be one of: {string.Join(", ", ContentStatus.All)}.");
+        }
+
+        var news = new News
+        {
+            Title = request.Title,
+            Body = request.Body,
+            DepartmentId = null,
+            Status = request.Status,
+            PublishAtUtc = request.PublishAtUtc,
+            CreatedBy = userId,
+        };
+
+        news.Id = await _newsRepository.CreateAsync(news);
+
+        await _activityLog.LogAsync(userId, "NewsCreated", "News", news.Id,
+            JsonSerializer.Serialize(new { news.Title, news.Status, Scope = "SchoolWide" }));
+
+        var created = await _newsRepository.GetByIdAsync(news.Id);
+        return ScopedResult<NewsDto>.Ok(MapToDto(created!));
+    }
+
+    public async Task<ScopedResult<NewsDto>> UpdateSchoolWideAsync(int id, int userId, NewsRequestDto request)
+    {
+        var existing = await _newsRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return ScopedResult<NewsDto>.NotFound();
+        }
+
+        // Editing department News is the Academic Head's job (BW-16); Super Admin manages
+        // school-wide items only through this endpoint.
+        if (existing.DepartmentId is not null)
+        {
+            return ScopedResult<NewsDto>.Forbidden();
+        }
+
+        if (!ContentStatus.IsValid(request.Status))
+        {
+            return ScopedResult<NewsDto>.Invalid($"Status must be one of: {string.Join(", ", ContentStatus.All)}.");
+        }
+
+        existing.Title = request.Title;
+        existing.Body = request.Body;
+        existing.Status = request.Status;
+        existing.PublishAtUtc = request.PublishAtUtc;
+        existing.UpdatedBy = userId;
+
+        var updated = await _newsRepository.UpdateAsync(existing);
+        if (!updated)
+        {
+            return ScopedResult<NewsDto>.NotFound();
+        }
+
+        await _activityLog.LogAsync(userId, "NewsUpdated", "News", id,
+            JsonSerializer.Serialize(new { existing.Title, existing.Status, Scope = "SchoolWide" }));
+
+        var refreshed = await _newsRepository.GetByIdAsync(id);
+        return ScopedResult<NewsDto>.Ok(MapToDto(refreshed!));
+    }
+
+    public async Task<ScopedResult<bool>> DeleteSchoolWideAsync(int id, int userId)
+    {
+        var existing = await _newsRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return ScopedResult<bool>.NotFound();
+        }
+
+        if (existing.DepartmentId is not null)
+        {
+            return ScopedResult<bool>.Forbidden();
+        }
+
+        var deleted = await _newsRepository.DeleteAsync(id);
+        if (!deleted)
+        {
+            return ScopedResult<bool>.NotFound();
+        }
+
+        await _activityLog.LogAsync(userId, "NewsDeleted", "News", id,
+            JsonSerializer.Serialize(new { existing.Title, Scope = "SchoolWide" }));
+
+        return ScopedResult<bool>.Ok(true);
+    }
+
     private static NewsDto MapToDto(News news) => new()
     {
         Id = news.Id,

@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { NewsPage } from './pages/news/NewsPage';
+import { NewsAdminPage } from './pages/news/NewsAdminPage';
 import { RoleNames } from './types/roles';
 
 export function App() {
@@ -16,6 +17,9 @@ export function App() {
         </Route>
         <Route element={<ProtectedRoute roles={[RoleNames.AcademicHead]} />}>
           <Route path="/news" element={<NewsPage />} />
+        </Route>
+        <Route element={<ProtectedRoute roles={[RoleNames.SuperAdmin]} />}>
+          <Route path="/admin/news" element={<NewsAdminPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

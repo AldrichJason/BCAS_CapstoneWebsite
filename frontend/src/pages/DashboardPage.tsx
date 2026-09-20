@@ -30,6 +30,12 @@ export function DashboardPage() {
         </nav>
       )}
 
+      {user?.role === RoleNames.SuperAdmin && (
+        <nav className="dashboard-nav">
+          <Link to="/admin/news">School News</Link>
+        </nav>
+      )}
+
       <p className="dashboard-placeholder">
         Role-specific dashboard content will be built out in the following sprint tickets.
       </p>
