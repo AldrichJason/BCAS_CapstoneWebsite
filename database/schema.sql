@@ -116,6 +116,10 @@ CREATE TABLE dbo.News
 );
 GO
 
+-- Supports department-scoped list views filtered by status (BW-16, BW-17).
+CREATE INDEX IX_News_DepartmentId_Status ON dbo.News(DepartmentId, Status);
+GO
+
 CREATE TABLE dbo.Announcements
 (
     Id              INT IDENTITY(1,1) PRIMARY KEY,
