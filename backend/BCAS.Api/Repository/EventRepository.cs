@@ -44,6 +44,22 @@ public class EventRepository : IEventRepository
         return rows.AsList();
     }
 
+    public async Task<IReadOnlyList<Event>> GetAllAsync(int? departmentId, string? status)
+    {
+        var sql = $@"SELECT {SelectColumns}
+            WHERE (
+                    @DepartmentId IS NULL
+                 OR (@DepartmentId = 0 AND e.DepartmentId IS NULL)
+                 OR (@DepartmentId > 0 AND e.DepartmentId = @DepartmentId)
+                  )
+              AND (@Status IS NULL OR e.Status = @Status)
+            ORDER BY e.EventStartUtc DESC;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        var rows = await connection.QueryAsync<Event>(sql, new { DepartmentId = departmentId, Status = status });
+        return rows.AsList();
+    }
+
     public async Task<int> CreateAsync(Event evt)
     {
         const string sql = @"

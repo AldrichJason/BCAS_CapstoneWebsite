@@ -10,4 +10,11 @@ public interface IAnnouncementService
     Task<ScopedResult<AnnouncementDto>> CreateAsync(int departmentId, int userId, AnnouncementRequestDto request);
     Task<ScopedResult<AnnouncementDto>> UpdateAsync(int id, int departmentId, int userId, AnnouncementRequestDto request);
     Task<ScopedResult<bool>> DeleteAsync(int id, int departmentId, int userId);
+
+    // Super Admin: school-wide Announcements management across all departments.
+    Task<IReadOnlyList<AnnouncementDto>> GetAllForAdminAsync(int? departmentId, string? status);
+    Task<AnnouncementDto?> GetByIdForAdminAsync(int id);
+    Task<ScopedResult<AnnouncementDto>> CreateSchoolWideAsync(int userId, AnnouncementRequestDto request);
+    Task<ScopedResult<AnnouncementDto>> UpdateSchoolWideAsync(int id, int userId, AnnouncementRequestDto request);
+    Task<ScopedResult<bool>> DeleteSchoolWideAsync(int id, int userId);
 }

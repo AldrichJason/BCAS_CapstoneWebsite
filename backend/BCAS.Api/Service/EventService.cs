@@ -146,6 +146,120 @@ public class EventService : IEventService
         return ScopedResult<bool>.Ok(true);
     }
 
+    public async Task<IReadOnlyList<EventDto>> GetAllForAdminAsync(int? departmentId, string? status)
+    {
+        var rows = await _eventRepository.GetAllAsync(departmentId, status);
+        return rows.Select(MapToDto).ToList();
+    }
+
+    public async Task<EventDto?> GetByIdForAdminAsync(int id)
+    {
+        var evt = await _eventRepository.GetByIdAsync(id);
+        return evt is null ? null : MapToDto(evt);
+    }
+
+    public async Task<ScopedResult<EventDto>> CreateSchoolWideAsync(int userId, EventRequestDto request)
+    {
+        if (!ContentStatus.IsValid(request.Status))
+        {
+            return ScopedResult<EventDto>.Invalid($"Status must be one of: {string.Join(", ", ContentStatus.All)}.");
+        }
+
+        if (request.EventEndUtc.HasValue && request.EventEndUtc.Value < request.EventStartUtc)
+        {
+            return ScopedResult<EventDto>.Invalid("End date/time must not precede the start date/time.");
+        }
+
+        var evt = new Event
+        {
+            Title = request.Title,
+            Description = request.Description,
+            EventStartUtc = request.EventStartUtc,
+            EventEndUtc = request.EventEndUtc,
+            Venue = request.Venue,
+            DepartmentId = null,
+            Status = request.Status,
+            CreatedBy = userId,
+        };
+
+        evt.Id = await _eventRepository.CreateAsync(evt);
+
+        await _activityLog.LogAsync(userId, "EventCreated", "Event", evt.Id,
+            JsonSerializer.Serialize(new { evt.Title, evt.Status, Scope = "SchoolWide" }));
+
+        var created = await _eventRepository.GetByIdAsync(evt.Id);
+        return ScopedResult<EventDto>.Ok(MapToDto(created!));
+    }
+
+    public async Task<ScopedResult<EventDto>> UpdateSchoolWideAsync(int id, int userId, EventRequestDto request)
+    {
+        var existing = await _eventRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return ScopedResult<EventDto>.NotFound();
+        }
+
+        if (existing.DepartmentId is not null)
+        {
+            return ScopedResult<EventDto>.Forbidden();
+        }
+
+        if (!ContentStatus.IsValid(request.Status))
+        {
+            return ScopedResult<EventDto>.Invalid($"Status must be one of: {string.Join(", ", ContentStatus.All)}.");
+        }
+
+        if (request.EventEndUtc.HasValue && request.EventEndUtc.Value < request.EventStartUtc)
+        {
+            return ScopedResult<EventDto>.Invalid("End date/time must not precede the start date/time.");
+        }
+
+        existing.Title = request.Title;
+        existing.Description = request.Description;
+        existing.EventStartUtc = request.EventStartUtc;
+        existing.EventEndUtc = request.EventEndUtc;
+        existing.Venue = request.Venue;
+        existing.Status = request.Status;
+        existing.UpdatedBy = userId;
+
+        var updated = await _eventRepository.UpdateAsync(existing);
+        if (!updated)
+        {
+            return ScopedResult<EventDto>.NotFound();
+        }
+
+        await _activityLog.LogAsync(userId, "EventUpdated", "Event", id,
+            JsonSerializer.Serialize(new { existing.Title, existing.Status, Scope = "SchoolWide" }));
+
+        var refreshed = await _eventRepository.GetByIdAsync(id);
+        return ScopedResult<EventDto>.Ok(MapToDto(refreshed!));
+    }
+
+    public async Task<ScopedResult<bool>> DeleteSchoolWideAsync(int id, int userId)
+    {
+        var existing = await _eventRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return ScopedResult<bool>.NotFound();
+        }
+
+        if (existing.DepartmentId is not null)
+        {
+            return ScopedResult<bool>.Forbidden();
+        }
+
+        var deleted = await _eventRepository.DeleteAsync(id);
+        if (!deleted)
+        {
+            return ScopedResult<bool>.NotFound();
+        }
+
+        await _activityLog.LogAsync(userId, "EventDeleted", "Event", id,
+            JsonSerializer.Serialize(new { existing.Title, Scope = "SchoolWide" }));
+
+        return ScopedResult<bool>.Ok(true);
+    }
+
     private static EventDto MapToDto(Event evt) => new()
     {
         Id = evt.Id,

@@ -6,6 +6,7 @@ export interface AnnouncementDto {
   body: string;
   departmentId: number | null;
   departmentName: string | null;
+  isSchoolWide: boolean;
   status: ContentStatusValue;
   effectiveDateUtc: string | null;
   createdByName: string | null;

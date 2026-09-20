@@ -44,6 +44,18 @@ export function DashboardPage() {
           >
             School News
           </Link>
+          <Link
+            to="/admin/announcements"
+            className="font-semibold text-primary hover:text-accent-dark hover:underline"
+          >
+            School Announcements
+          </Link>
+          <Link
+            to="/admin/events"
+            className="font-semibold text-primary hover:text-accent-dark hover:underline"
+          >
+            School Events
+          </Link>
         </nav>
       )}
 

@@ -10,7 +10,9 @@ import { AdminAccountsPage } from './pages/AdminAccountsPage';
 import { NewsPage } from './pages/news/NewsPage';
 import { NewsAdminPage } from './pages/news/NewsAdminPage';
 import { AnnouncementsPage } from './pages/announcements/AnnouncementsPage';
+import { AnnouncementsAdminPage } from './pages/announcements/AnnouncementsAdminPage';
 import { EventsPage } from './pages/events/EventsPage';
+import { EventsAdminPage } from './pages/events/EventsAdminPage';
 import { RoleNames } from './types/roles';
 
 export function App() {
@@ -33,6 +35,8 @@ export function App() {
         </Route>
         <Route element={<ProtectedRoute roles={[RoleNames.SuperAdmin]} />}>
           <Route path="/admin/news" element={<NewsAdminPage />} />
+          <Route path="/admin/announcements" element={<AnnouncementsAdminPage />} />
+          <Route path="/admin/events" element={<EventsAdminPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

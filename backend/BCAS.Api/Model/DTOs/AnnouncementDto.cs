@@ -7,6 +7,7 @@ public class AnnouncementDto
     public string Body { get; set; } = string.Empty;
     public int? DepartmentId { get; set; }
     public string? DepartmentName { get; set; }
+    public bool IsSchoolWide => DepartmentId is null;
     public string Status { get; set; } = string.Empty;
 
     /// <summary>Announcement domain name for the shared PublishAtUtc column (BW-18 AC).</summary>
